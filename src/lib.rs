@@ -10,7 +10,7 @@ pub mod bindings {
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
 
-use crate::bindings::{GetDefaultKinectSensor, IKinectSensor};
+use crate::bindings::root::{GetDefaultKinectSensor, IKinectSensor};
 use std::ptr;
 
 pub fn get_default_kinect_sensor() {
@@ -18,7 +18,21 @@ pub fn get_default_kinect_sensor() {
 
     let hr = unsafe { GetDefaultKinectSensor(&mut kinect_sensor_ptr as *mut *mut IKinectSensor) };
 
-    println!("GetDefaultKinectSensor returned: {}", hr);
+    eprintln!("====== GetDefaultKinectSensor returned: {}", hr);
+    if hr != 0 || kinect_sensor_ptr.is_null() {
+        eprintln!(
+            "=== Failed to get default Kinect sensor. HRESULT: {}. Pointer: {:?}",
+            hr, kinect_sensor_ptr
+        );
+        return;
+    }
+
+    let kinect_sensor = unsafe { &*kinect_sensor_ptr };
+    let hr = unsafe { kinect_sensor.Open() };
+    if hr != 0 {
+        eprintln!("=== Failed to open Kinect sensor. HRESULT: {}", hr);
+        return;
+    }
 }
 
 #[cfg(test)]

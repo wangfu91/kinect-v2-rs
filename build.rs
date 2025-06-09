@@ -15,6 +15,8 @@ fn main() {
         .header("include/Kinect.h")
         .header("include/Kinect.INPC.h")
         .clang_arg("--target=x86_64-pc-windows-msvc")
+        .clang_args(&["-x", "c++", "-std=c++17"]) // Treat headers as C++17
+        .enable_cxx_namespaces() // Enable C++ namespace support
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .rustified_enum(".*") // Generate Rust-style enums
         .derive_default(true) // Attempt to derive Default for structs
