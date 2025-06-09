@@ -7,7 +7,7 @@ fn main() {
     println!("cargo:rerun-if-changed=include/Kinect.h");
     println!("cargo:rerun-if-changed=include/Kinect.INPC.h");
     println!(
-        "cargo:rustc-link-search=native=C:\\\\Program Files\\\\Microsoft SDKs\\\\Kinect\\\\v2.0_1409\\\\Lib\\\\x64"
+        "cargo:rustc-link-search=native=C:\\Program Files\\Microsoft SDKs\\Kinect\\v2.0_1409\\Lib\\x64"
     );
     println!("cargo:rustc-link-lib=Kinect20");
 
