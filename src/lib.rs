@@ -10,65 +10,97 @@ pub mod bindings {
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
 
+use windows_sys::{
+    Win32::Foundation::{BOOLEAN, E_FAIL, E_POINTER},
+    core::HRESULT,
+};
+
 use crate::bindings::{GetDefaultKinectSensor, IKinectSensor};
 use std::ptr;
+
+// Add an impl block for IKinectSensor to provide a helper method for Open
+impl IKinectSensor {
+    pub fn open(&mut self) -> Result<(), HRESULT> {
+        let kinect_sensor_ptr = self as *mut Self;
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(open_fn) = vtbl.Open {
+                let hr = unsafe { open_fn(kinect_sensor_ptr) };
+                if hr == 0 {
+                    Ok(())
+                } else {
+                    eprintln!(
+                        "IKinectSensor::open: Failed to open Kinect sensor. HRESULT: {:#X}",
+                        hr
+                    );
+                    Err(hr)
+                }
+            } else {
+                eprintln!("IKinectSensor::open: Open method not found in VTable (is None).");
+                Err(E_FAIL)
+            }
+        } else {
+            eprintln!("IKinectSensor::open: VTable pointer (lpVtbl) is null.");
+            Err(E_POINTER)
+        }
+    }
+
+    pub fn is_available(&mut self) -> Result<bool, HRESULT> {
+        let kinect_sensor_ptr = self as *mut Self;
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(get_is_available_fn) = vtbl.get_IsAvailable {
+                let mut is_available: BOOLEAN = 0;
+                let hr = unsafe { get_is_available_fn(kinect_sensor_ptr, &mut is_available) };
+                if hr == 0 {
+                    Ok(is_available != 0)
+                } else {
+                    Err(hr)
+                }
+            } else {
+                eprintln!("get_IsAvailable method not found in IKinectSensor VTable (is None).");
+                Err(E_FAIL)
+            }
+        } else {
+            eprintln!("IKinectSensor::get_IsAvailable: VTable pointer (lpVtbl) is null.");
+            Err(E_POINTER)
+        }
+    }
+}
 
 pub fn get_default_kinect_sensor() {
     let mut kinect_sensor_ptr: *mut IKinectSensor = ptr::null_mut();
 
+    // Call the FFI function to get the default Kinect sensor
     let hr = unsafe { GetDefaultKinectSensor(&mut kinect_sensor_ptr as *mut *mut IKinectSensor) };
 
-    eprintln!("====== GetDefaultKinectSensor returned: {}", hr);
-    if hr != 0 || kinect_sensor_ptr.is_null() {
+    eprintln!("====== GetDefaultKinectSensor returned: HRESULT {:#X}", hr);
+    if hr != 0 {
         eprintln!(
-            "=== Failed to get default Kinect sensor. HRESULT: {}. Pointer: {:?}",
-            hr, kinect_sensor_ptr
+            "=== Failed to get default Kinect sensor. HRESULT: {:#X}",
+            hr
         );
         return;
     }
 
-    // IKinectSensor is a COM interface pointer. Methods are called via its vtable (lpVtbl).
-    // kinect_sensor_ptr is *mut IKinectSensor.
-    // The IKinectSensor struct contains `lpVtbl: *mut IKinectSensorVtbl`.
-    // We need to access this vtable.
-    let vtbl_ptr = unsafe { (*kinect_sensor_ptr).lpVtbl };
-
-    if vtbl_ptr.is_null() {
-        eprintln!("=== IKinectSensor's vtable (lpVtbl) is null.");
-        // It's good practice to also call Release on kinect_sensor_ptr if it was acquired,
-        // but GetDefaultKinectSensor might not require a matching Release if it's a singleton
-        // or if the lifetime is managed differently. For now, just return.
+    // At this point, kinect_sensor_ptr is considered valid and points to an IKinectSensor instance.
+    // We need to convert `*mut IKinectSensor` to `&mut IKinectSensor` to call the method.
+    // This is an unsafe operation as it involves dereferencing a raw pointer.
+    // It assumes kinect_sensor_ptr is valid, non-null, and properly aligned.
+    let sensor_instance: &mut IKinectSensor = unsafe { &mut *kinect_sensor_ptr };
+    if let Err(hr) = sensor_instance.open() {
+        eprintln!("=== Failed to open Kinect sensor. HRESULT: {:#X}", hr);
         return;
-    }
-
-    // Dereference the vtable pointer to get the actual vtable struct.
-    let vtbl = unsafe { &*vtbl_ptr };
-
-    // The Open method is a field in the vtable, of type Option<unsafe extern "C" fn(...)>.
-    if let Some(open_method) = vtbl.Open {
-        // Call the Open method. The first argument to COM methods (This) is the interface pointer itself.
-        let hr_open = unsafe { open_method(kinect_sensor_ptr) };
-        if hr_open != 0 {
-            eprintln!("=== Failed to open Kinect sensor. HRESULT: {}", hr_open);
-            // Consider releasing kinect_sensor_ptr here if applicable
-            return;
-        }
-        eprintln!("=== Kinect sensor opened successfully.");
-        // TODO: Add code to use the sensor and then Close it.
-        // For example, to close:
-        // if let Some(close_method) = vtbl.Close {
-        //     unsafe { close_method(kinect_sensor_ptr) };
-        //     eprintln!("Kinect sensor closed.");
-        // }
     } else {
-        eprintln!("=== IKinectSensor_Open method not found in vtable (it's None).");
-        // Consider releasing kinect_sensor_ptr here if applicable
-        return;
+        eprintln!("=== Successfully opened Kinect sensor.");
     }
 
-    // After use, the sensor should be closed and the interface pointer released.
-    // This is a simplified example. Proper resource management (RAII) would be better.
-    // For now, we are not closing or releasing in this example function.
+    match sensor_instance.is_available() {
+        Err(hr) => {
+            eprintln!("=== Kinect sensor is not available. HRESULT: {:#X}", hr);
+        }
+        Ok(is_available) => {
+            eprintln!("=== Kinect sensor available: {:?}.", is_available);
+        }
+    }
 }
 
 #[cfg(test)]
