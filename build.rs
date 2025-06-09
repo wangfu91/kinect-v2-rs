@@ -5,7 +5,6 @@ use std::path::PathBuf;
 
 fn main() {
     println!("cargo:rerun-if-changed=include/Kinect.h");
-    println!("cargo:rerun-if-changed=include/Kinect.INPC.h");
     println!(
         "cargo:rustc-link-search=native=C:\\Program Files\\Microsoft SDKs\\Kinect\\v2.0_1409\\Lib\\x64"
     );
@@ -13,8 +12,7 @@ fn main() {
 
     let bindings = bindgen::Builder::default()
         .header("include/Kinect.h")
-        .header("include/Kinect.INPC.h")
-        .clang_arg("--target=x86_64-pc-windows-msvc")
+        .allowlist_file("include/Kinect.h")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .rustified_enum(".*") // Generate Rust-style enums
         .derive_default(true) // Attempt to derive Default for structs
