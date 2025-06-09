@@ -1,19 +1,22 @@
-mod bindings;
-
-use std::ptr;
+pub mod bindings {
+    #![allow(non_upper_case_globals)]
+    #![allow(non_camel_case_types)]
+    #![allow(non_snake_case)]
+    #![allow(dead_code)]
+    #![allow(trivial_casts)]
+    #![allow(clippy::all)]
+    #![allow(unsafe_op_in_unsafe_fn)]
+    #![allow(unused_imports)]
+    include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+}
 
 use crate::bindings::{GetDefaultKinectSensor, IKinectSensor};
-
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+use std::ptr;
 
 pub fn get_default_kinect_sensor() {
     let mut kinect_sensor_ptr: *mut IKinectSensor = ptr::null_mut();
 
-    let hr = unsafe {
-        GetDefaultKinectSensor(&mut kinect_sensor_ptr as *mut *mut IKinectSensor)
-    };
+    let hr = unsafe { GetDefaultKinectSensor(&mut kinect_sensor_ptr as *mut *mut IKinectSensor) };
 
     println!("GetDefaultKinectSensor returned: {}", hr);
 }
@@ -24,7 +27,6 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+        get_default_kinect_sensor();
     }
 }
