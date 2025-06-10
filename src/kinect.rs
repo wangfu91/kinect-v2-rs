@@ -1,16 +1,50 @@
+use crate::audio::AudioSource;
+use crate::bindings::{
+    self, DWORD, GetDefaultKinectSensor, IIsAvailableChangedEventArgs, UINT, WAITABLE_HANDLE, WCHAR,
+};
+use crate::body::{BodyFrameSource, BodyIndexFrameSource};
+use crate::color::ColorFrameSource;
+use crate::coordinate::CoordinateMapper;
+use crate::depth::DepthFrameSource;
+use crate::frame::MultiSourceFrameReader;
+use crate::infrared::{InfraredFrameSource, LongExposureInfraredFrameSource};
+use std::os::windows::ffi::OsStringExt;
+use std::{ffi::OsString, ptr};
 use windows_sys::{
     Win32::Foundation::{BOOLEAN, E_FAIL, E_POINTER},
     core::HRESULT,
 };
 
-use crate::bindings::{self, DWORD, GetDefaultKinectSensor, UINT, WAITABLE_HANDLE, WCHAR};
-use crate::color_frame::{
-    AudioSource, BodyFrameSource, BodyIndexFrameSource, ColorFrameSource, CoordinateMapper,
-    DepthFrameSource, InfraredFrameSource, IsAvailableChangedEventArgs,
-    LongExposureInfraredFrameSource, MultiSourceFrameReader,
-};
-use std::os::windows::ffi::OsStringExt;
-use std::{ffi::OsString, ptr};
+pub struct IsAvailableChangedEventArgs {
+    pub(crate) ptr: *mut IIsAvailableChangedEventArgs,
+}
+impl IsAvailableChangedEventArgs {
+    pub(crate) fn new(ptr: *mut IIsAvailableChangedEventArgs) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+    // Add methods for IIsAvailableChangedEventArgs here, e.g., get_IsAvailable
+    pub fn get_is_available(&self) -> Result<bool, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_IsAvailable.ok_or(E_FAIL)?;
+        let mut available: BOOLEAN = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut available) };
+        if hr == 0 { Ok(available != 0) } else { Err(hr) }
+    }
+}
+impl Drop for IsAvailableChangedEventArgs {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                ((*(*self.ptr).lpVtbl).Release.unwrap())(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
 
 pub struct KinectSensor {
     ptr: *mut bindings::IKinectSensor,

@@ -9,8 +9,14 @@ pub mod bindings {
     #![allow(unused_imports)]
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
-pub mod color_frame;
-pub mod kinect_sensor;
+pub mod audio;
+pub mod body;
+pub mod color;
+pub mod coordinate;
+pub mod depth;
+pub mod frame;
+pub mod infrared;
+pub mod kinect;
 
 use crate::bindings::{WAIT_TIMEOUT, WAITABLE_HANDLE, WaitForSingleObject};
 use windows_sys::Win32::Foundation::{HANDLE, WAIT_OBJECT_0};
@@ -25,7 +31,7 @@ pub fn main() {
 
 fn color_frame_demo() -> anyhow::Result<()> {
     let kinect_sensor =
-        kinect_sensor::get_default_kinect_sensor().expect("Failed to get default Kinect sensor");
+        kinect::get_default_kinect_sensor().expect("Failed to get default Kinect sensor");
 
     kinect_sensor.open().expect("Failed to open Kinect sensor");
 
