@@ -42,7 +42,7 @@ fn color_frame_demo() -> anyhow::Result<()> {
         .expect("Failed to subscribe to frame arrived event");
 
     loop {
-        let result = unsafe { WaitForSingleObject(waitable_handle as HANDLE, 100) };
+        let result = unsafe { WaitForSingleObject(waitable_handle as HANDLE, FRAME_WAIT_TIMEOUT_MS) };
         if WAIT_OBJECT_0 == result {
             match color_frame_reader.get_frame_arrived_event_data(waitable_handle) {
                 Ok(event_args) => {
