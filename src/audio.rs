@@ -626,7 +626,6 @@ pub struct AudioBeamSubFrame {
 }
 
 impl AudioBeamSubFrame {
-    #[allow(dead_code)]
     pub(crate) fn new(ptr: *mut IAudioBeamSubFrame) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
