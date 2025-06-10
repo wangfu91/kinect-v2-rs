@@ -347,4 +347,26 @@ impl IKinectSensor {
             Err(E_POINTER)
         }
     }
+
+    pub fn release(&mut self) -> Result<(), HRESULT> {
+        let kinect_sensor_ptr = self as *mut Self;
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(release_fn) = vtbl.Release {
+                let hr = unsafe { release_fn(kinect_sensor_ptr) };
+                if hr == 0 { Ok(()) } else { Err(hr as i32) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+}
+
+impl Drop for IKinectSensor {
+    fn drop(&mut self) {
+        if let Err(hr) = self.release() {
+            eprintln!("Failed to release IKinectSensor: HRESULT = {:#X}", hr);
+        }
+    }
 }

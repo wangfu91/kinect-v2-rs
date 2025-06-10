@@ -25,7 +25,8 @@ fn main() {
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .rustified_enum(".*") // Generate Rust-style enums
         .derive_default(true) // Attempt to derive Default for structs
-        .derive_debug(true) // Attempt to derive Debug for structs
+        .derive_debug(false) // Attempt to derive Debug for structs
+        .derive_copy(false)
         .no_default("tagMONITORINFOEXA") // Don't derive Default for this struct
         .no_default("tagMONITORINFOEXW") // Don't derive Default for this struct (precaution)
         .generate()

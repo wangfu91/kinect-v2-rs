@@ -107,6 +107,27 @@ impl IFrameDescription {
             Err(E_POINTER)
         }
     }
+
+    pub fn release(&mut self) -> Result<(), HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(release_fn) = vtbl.Release {
+                let hr = unsafe { release_fn(self) };
+                if hr == 0 { Ok(()) } else { Err(hr as i32) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+}
+
+impl Drop for IFrameDescription {
+    fn drop(&mut self) {
+        if let Err(hr) = self.release() {
+            eprintln!("Failed to release IFrameDescription: HRESULT = {:#X}", hr);
+        }
+    }
 }
 
 impl IFrameCapturedEventArgs {
@@ -158,6 +179,30 @@ impl IFrameCapturedEventArgs {
             }
         } else {
             Err(E_POINTER)
+        }
+    }
+
+    pub fn release(&mut self) -> Result<(), HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(release_fn) = vtbl.Release {
+                let hr = unsafe { release_fn(self) };
+                if hr == 0 { Ok(()) } else { Err(hr as i32) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+}
+
+impl Drop for IFrameCapturedEventArgs {
+    fn drop(&mut self) {
+        if let Err(hr) = self.release() {
+            eprintln!(
+                "Failed to release IFrameCapturedEventArgs: HRESULT = {:#X}",
+                hr
+            );
         }
     }
 }
@@ -301,6 +346,27 @@ impl IColorFrame {
             Err(E_POINTER)
         }
     }
+
+    pub fn release(&mut self) -> Result<(), HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(release_fn) = vtbl.Release {
+                let hr = unsafe { release_fn(self) };
+                if hr == 0 { Ok(()) } else { Err(hr as i32) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+}
+
+impl Drop for IColorFrame {
+    fn drop(&mut self) {
+        if let Err(hr) = self.release() {
+            eprintln!("Failed to release IColorFrame: HRESULT = {:#X}", hr);
+        }
+    }
 }
 
 impl IColorFrameArrivedEventArgs {
@@ -315,6 +381,30 @@ impl IColorFrameArrivedEventArgs {
             }
         } else {
             Err(E_POINTER)
+        }
+    }
+
+    pub fn release(&mut self) -> Result<(), HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(release_fn) = vtbl.Release {
+                let hr = unsafe { release_fn(self) };
+                if hr == 0 { Ok(()) } else { Err(hr as i32) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+}
+
+impl Drop for IColorFrameArrivedEventArgs {
+    fn drop(&mut self) {
+        if let Err(hr) = self.release() {
+            eprintln!(
+                "Failed to release IColorFrameArrivedEventArgs: HRESULT = {:#X}",
+                hr
+            );
         }
     }
 }
@@ -345,6 +435,30 @@ impl IColorFrameReference {
             }
         } else {
             Err(E_POINTER)
+        }
+    }
+
+    pub fn release(&mut self) -> Result<(), HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(release_fn) = vtbl.Release {
+                let hr = unsafe { release_fn(self) };
+                if hr == 0 { Ok(()) } else { Err(hr as i32) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+}
+
+impl Drop for IColorFrameReference {
+    fn drop(&mut self) {
+        if let Err(hr) = self.release() {
+            eprintln!(
+                "Failed to release IColorFrameReference: HRESULT = {:#X}",
+                hr
+            );
         }
     }
 }
@@ -405,9 +519,31 @@ impl IColorCameraSettings {
             Err(E_POINTER)
         }
     }
+
+    pub fn release(&mut self) -> Result<(), HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(release_fn) = vtbl.Release {
+                let hr = unsafe { release_fn(self) };
+                if hr == 0 { Ok(()) } else { Err(hr as i32) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
 }
 
-unsafe impl Send for IColorFrameReader {}
+impl Drop for IColorCameraSettings {
+    fn drop(&mut self) {
+        if let Err(hr) = self.release() {
+            eprintln!(
+                "Failed to release IColorCameraSettings: HRESULT = {:#X}",
+                hr
+            );
+        }
+    }
+}
 
 impl IColorFrameReader {
     pub fn subscribe_frame_arrived(
@@ -515,6 +651,27 @@ impl IColorFrameReader {
             }
         } else {
             Err(E_POINTER)
+        }
+    }
+
+    pub fn release(&mut self) -> Result<(), HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(release_fn) = vtbl.Release {
+                let hr = unsafe { release_fn(self) };
+                if hr == 0 { Ok(()) } else { Err(hr as i32) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+}
+
+impl Drop for IColorFrameReader {
+    fn drop(&mut self) {
+        if let Err(hr) = self.release() {
+            eprintln!("Failed to release IColorFrameReader: HRESULT = {:#X}", hr);
         }
     }
 }
@@ -643,6 +800,26 @@ impl IColorFrameSource {
             }
         } else {
             Err(E_POINTER)
+        }
+    }
+    pub fn release(&mut self) -> Result<(), HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(release_fn) = vtbl.Release {
+                let hr = unsafe { release_fn(self) };
+                if hr == 0 { Ok(()) } else { Err(hr as i32) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+}
+
+impl Drop for IColorFrameSource {
+    fn drop(&mut self) {
+        if let Err(hr) = self.release() {
+            eprintln!("Failed to release IColorFrameSource: HRESULT = {:#X}", hr);
         }
     }
 }
