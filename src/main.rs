@@ -15,6 +15,8 @@ pub mod kinect_sensor;
 use crate::bindings::{WAIT_TIMEOUT, WAITABLE_HANDLE, WaitForSingleObject};
 use windows_sys::Win32::Foundation::{HANDLE, WAIT_OBJECT_0};
 
+const FRAME_WAIT_TIMEOUT_MS: u32 = 100;
+
 pub fn main() {
     if let Err(e) = color_frame_demo() {
         eprintln!("Error in color frame demo: {:?}", e);
@@ -42,7 +44,8 @@ fn color_frame_demo() -> anyhow::Result<()> {
         .expect("Failed to subscribe to frame arrived event");
 
     loop {
-        let result = unsafe { WaitForSingleObject(waitable_handle as HANDLE, FRAME_WAIT_TIMEOUT_MS) };
+        let result =
+            unsafe { WaitForSingleObject(waitable_handle as HANDLE, FRAME_WAIT_TIMEOUT_MS) };
         if WAIT_OBJECT_0 == result {
             match color_frame_reader.get_frame_arrived_event_data(waitable_handle) {
                 Ok(event_args) => {
