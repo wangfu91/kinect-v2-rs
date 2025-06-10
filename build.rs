@@ -1,18 +1,27 @@
 extern crate bindgen;
 
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 fn main() {
-    println!("cargo:rerun-if-changed=include/Kinect.h");
-    println!(
-        "cargo:rustc-link-search=native=C:\\Program Files\\Microsoft SDKs\\Kinect\\v2.0_1409\\Lib\\x64"
-    );
+    let kinect_sdk_path = Path::new("C:\\Program Files\\Microsoft SDKs\\Kinect\\v2.0_1409");
+    #[cfg(target_arch = "x86")]
+    let lib_path = kinect_sdk_path.join("Lib").join("x86");
+    #[cfg(target_arch = "x86_64")]
+    let lib_path = kinect_sdk_path.join("Lib").join("x64");
+
+    println!("cargo:rerun-if-changed=include/wrapper.h");
+
+    println!("cargo:rustc-link-search=native={}", lib_path.display());
     println!("cargo:rustc-link-lib=Kinect20");
 
+    let inc_path = kinect_sdk_path.join("inc");
+    let mut inc_arg = String::from("-I");
+    inc_arg.push_str(inc_path.to_str().unwrap());
+
     let bindings = bindgen::Builder::default()
-        .header("include/Kinect.h")
-        .allowlist_file("include/Kinect.h")
+        .header("include/wrapper.h")
+        .clang_arg(inc_arg.as_str())
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .rustified_enum(".*") // Generate Rust-style enums
         .derive_default(true) // Attempt to derive Default for structs
