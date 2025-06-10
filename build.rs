@@ -1,9 +1,9 @@
 extern crate bindgen;
 
-use std::env;
-use std::path::{Path, PathBuf};
-
 fn main() {
+    use std::env;
+    use std::path::{Path, PathBuf};
+
     let kinect_sdk_path = Path::new("C:\\Program Files\\Microsoft SDKs\\Kinect\\v2.0_1409");
     #[cfg(target_arch = "x86")]
     let lib_path = kinect_sdk_path.join("Lib").join("x86");
@@ -29,6 +29,10 @@ fn main() {
         .derive_copy(false)
         .no_default("tagMONITORINFOEXA") // Don't derive Default for this struct
         .no_default("tagMONITORINFOEXW") // Don't derive Default for this struct (precaution)
+        .blocklist_type("HRESULT") // Prevent bindgen from generating HRESULT
+        .raw_line("pub use windows::core::HRESULT;") // Use the HRESULT from the windows crate
+        .blocklist_type("HANDLE") // Prevent bindgen from generating UINT
+        .raw_line("pub type HANDLE = windows::Win32::Foundation::HANDLE;") // Use the HANDLE from the windows crate
         .generate()
         .expect("Unable to generate bindings");
 

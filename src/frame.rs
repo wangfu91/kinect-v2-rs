@@ -3,9 +3,9 @@ use crate::bindings::{
     IMultiSourceFrameReader, TIMESPAN,
 };
 use std::ptr;
-use windows_sys::{
+use windows::{
     Win32::Foundation::{E_FAIL, E_POINTER},
-    core::HRESULT,
+    core::Error,
 };
 
 pub struct FrameDescription {
@@ -18,81 +18,109 @@ impl FrameDescription {
         Self { ptr }
     }
 
-    pub fn get_width(&self) -> Result<i32, HRESULT> {
+    pub fn get_width(&self) -> Result<i32, Error> {
         if self.ptr.is_null() {
-            return Err(E_POINTER);
+            return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_Width.ok_or(E_FAIL)?;
         let mut width: i32 = 0;
         let hr = unsafe { get_fn(self.ptr, &mut width) };
-        if hr == 0 { Ok(width) } else { Err(hr) }
+        if hr.is_ok() {
+            Ok(width)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
     }
 
-    pub fn get_height(&self) -> Result<i32, HRESULT> {
+    pub fn get_height(&self) -> Result<i32, Error> {
         if self.ptr.is_null() {
-            return Err(E_POINTER);
+            return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_Height.ok_or(E_FAIL)?;
         let mut height: i32 = 0;
         let hr = unsafe { get_fn(self.ptr, &mut height) };
-        if hr == 0 { Ok(height) } else { Err(hr) }
+        if hr.is_ok() {
+            Ok(height)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
     }
 
-    pub fn get_horizontal_field_of_view(&self) -> Result<f32, HRESULT> {
+    pub fn get_horizontal_field_of_view(&self) -> Result<f32, Error> {
         if self.ptr.is_null() {
-            return Err(E_POINTER);
+            return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_HorizontalFieldOfView.ok_or(E_FAIL)?;
         let mut fov: f32 = 0.0;
         let hr = unsafe { get_fn(self.ptr, &mut fov) };
-        if hr == 0 { Ok(fov) } else { Err(hr) }
+        if hr.is_ok() {
+            Ok(fov)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
     }
 
-    pub fn get_vertical_field_of_view(&self) -> Result<f32, HRESULT> {
+    pub fn get_vertical_field_of_view(&self) -> Result<f32, Error> {
         if self.ptr.is_null() {
-            return Err(E_POINTER);
+            return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_VerticalFieldOfView.ok_or(E_FAIL)?;
         let mut fov: f32 = 0.0;
         let hr = unsafe { get_fn(self.ptr, &mut fov) };
-        if hr == 0 { Ok(fov) } else { Err(hr) }
+        if hr.is_ok() {
+            Ok(fov)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
     }
 
-    pub fn get_diagonal_field_of_view(&self) -> Result<f32, HRESULT> {
+    pub fn get_diagonal_field_of_view(&self) -> Result<f32, Error> {
         if self.ptr.is_null() {
-            return Err(E_POINTER);
+            return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_DiagonalFieldOfView.ok_or(E_FAIL)?;
         let mut fov: f32 = 0.0;
         let hr = unsafe { get_fn(self.ptr, &mut fov) };
-        if hr == 0 { Ok(fov) } else { Err(hr) }
+        if hr.is_ok() {
+            Ok(fov)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
     }
 
-    pub fn get_length_in_pixels(&self) -> Result<u32, HRESULT> {
+    pub fn get_length_in_pixels(&self) -> Result<u32, Error> {
         if self.ptr.is_null() {
-            return Err(E_POINTER);
+            return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_LengthInPixels.ok_or(E_FAIL)?;
         let mut length: u32 = 0;
         let hr = unsafe { get_fn(self.ptr, &mut length) };
-        if hr == 0 { Ok(length) } else { Err(hr) }
+        if hr.is_ok() {
+            Ok(length)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
     }
 
-    pub fn get_bytes_per_pixel(&self) -> Result<u32, HRESULT> {
+    pub fn get_bytes_per_pixel(&self) -> Result<u32, Error> {
         if self.ptr.is_null() {
-            return Err(E_POINTER);
+            return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_BytesPerPixel.ok_or(E_FAIL)?;
         let mut bpp: u32 = 0;
         let hr = unsafe { get_fn(self.ptr, &mut bpp) };
-        if hr == 0 { Ok(bpp) } else { Err(hr) }
+        if hr.is_ok() {
+            Ok(bpp)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
     }
 }
 
@@ -127,37 +155,49 @@ impl FrameCapturedEventArgs {
         Self { ptr }
     }
 
-    pub fn get_frame_type(&self) -> Result<FrameSourceTypes, HRESULT> {
+    pub fn get_frame_type(&self) -> Result<FrameSourceTypes, Error> {
         if self.ptr.is_null() {
-            return Err(E_POINTER);
+            return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_FrameType.ok_or(E_FAIL)?;
         let mut frame_type: FrameSourceTypes = FrameSourceTypes::FrameSourceTypes_None;
         let hr = unsafe { get_fn(self.ptr, &mut frame_type) };
-        if hr == 0 { Ok(frame_type) } else { Err(hr) }
+        if hr.is_ok() {
+            Ok(frame_type)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
     }
 
-    pub fn get_frame_status(&self) -> Result<FrameCapturedStatus, HRESULT> {
+    pub fn get_frame_status(&self) -> Result<FrameCapturedStatus, Error> {
         if self.ptr.is_null() {
-            return Err(E_POINTER);
+            return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_FrameStatus.ok_or(E_FAIL)?;
         let mut status: FrameCapturedStatus = FrameCapturedStatus::FrameCapturedStatus_Unknown;
         let hr = unsafe { get_fn(self.ptr, &mut status) };
-        if hr == 0 { Ok(status) } else { Err(hr) }
+        if hr.is_ok() {
+            Ok(status)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
     }
 
-    pub fn get_relative_time(&self) -> Result<TIMESPAN, HRESULT> {
+    pub fn get_relative_time(&self) -> Result<TIMESPAN, Error> {
         if self.ptr.is_null() {
-            return Err(E_POINTER);
+            return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_RelativeTime.ok_or(E_FAIL)?;
         let mut time: TIMESPAN = 0;
         let hr = unsafe { get_fn(self.ptr, &mut time) };
-        if hr == 0 { Ok(time) } else { Err(hr) }
+        if hr.is_ok() {
+            Ok(time)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
     }
 }
 

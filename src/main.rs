@@ -1,3 +1,4 @@
+/*
 pub mod bindings {
     #![allow(non_upper_case_globals)]
     #![allow(non_camel_case_types)]
@@ -9,7 +10,9 @@ pub mod bindings {
     #![allow(unused_imports)]
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
+*/
 pub mod audio;
+pub mod bindings;
 pub mod body;
 pub mod color;
 pub mod coordinate;
@@ -17,9 +20,13 @@ pub mod depth;
 pub mod frame;
 pub mod infrared;
 pub mod kinect;
+pub mod utils;
 
-use crate::bindings::{WAIT_TIMEOUT, WAITABLE_HANDLE, WaitForSingleObject};
-use windows_sys::Win32::Foundation::{HANDLE, WAIT_OBJECT_0};
+use crate::bindings::WAITABLE_HANDLE;
+use windows::Win32::{
+    Foundation::{WAIT_OBJECT_0, WAIT_TIMEOUT},
+    System::Threading::WaitForSingleObject,
+};
 
 const FRAME_WAIT_TIMEOUT_MS: u32 = 100;
 
@@ -50,8 +57,7 @@ fn color_frame_demo() -> anyhow::Result<()> {
         .expect("Failed to subscribe to frame arrived event");
 
     loop {
-        let result =
-            unsafe { WaitForSingleObject(waitable_handle as HANDLE, FRAME_WAIT_TIMEOUT_MS) };
+        let result = unsafe { WaitForSingleObject(waitable_handle, FRAME_WAIT_TIMEOUT_MS) };
         if WAIT_OBJECT_0 == result {
             match color_frame_reader.get_frame_arrived_event_data(waitable_handle) {
                 Ok(event_args) => {
@@ -82,14 +88,14 @@ fn color_frame_demo() -> anyhow::Result<()> {
                     }
                 }
                 Err(hr) => {
-                    eprintln!("Failed to get frame arrived event data. HRESULT: {:#X}", hr);
+                    eprintln!("Failed to get frame arrived event data. HRESULT: {:?}", hr);
                     break;
                 }
             }
         } else if WAIT_TIMEOUT == result {
             eprintln!("No new color frame available, waiting...");
         } else {
-            eprintln!("WaitForSingleObject failed with result: {:#X}", result);
+            eprintln!("WaitForSingleObject failed with result: {:?}", result);
             break;
         }
     }
