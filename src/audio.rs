@@ -1,5 +1,6 @@
 use crate::bindings::{
-    AudioBeamMode, BOOLEAN, IAudioBeam, IAudioBeamFrameReader, IAudioBeamList,
+    AudioBeamMode, BOOLEAN, BYTE, IAudioBeam, IAudioBeamFrame, IAudioBeamFrameList,
+    IAudioBeamFrameReader, IAudioBeamList, IAudioBeamSubFrame, IAudioBodyCorrelation,
     IFrameCapturedEventArgs, IKinectSensor, KinectAudioCalibrationState, TIMESPAN, WAITABLE_HANDLE,
 };
 use crate::bindings::{IAudioSource, UINT};
@@ -414,6 +415,389 @@ impl AudioBeamList {
 }
 
 impl Drop for AudioBeamList {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
+                    if let Some(release_fn) = vtbl.Release {
+                        release_fn(self.ptr);
+                    }
+                }
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct AudioBeamFrameList {
+    ptr: *mut IAudioBeamFrameList,
+}
+
+impl AudioBeamFrameList {
+    pub(crate) fn new(ptr: *mut IAudioBeamFrameList) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+
+    pub fn get_beam_count(&self) -> Result<UINT, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_count_fn = vtbl.get_BeamCount.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut count: UINT = 0;
+        let hr = unsafe { get_count_fn(self.ptr, &mut count) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(count)
+        }
+    }
+
+    pub fn open_audio_beam_frame(&self, index: UINT) -> Result<AudioBeamFrame, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let open_frame_fn = vtbl.OpenAudioBeamFrame.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut audio_beam_frame_ptr: *mut IAudioBeamFrame = ptr::null_mut();
+        let hr = unsafe { open_frame_fn(self.ptr, index, &mut audio_beam_frame_ptr) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            if audio_beam_frame_ptr.is_null() {
+                Err(Error::from(E_POINTER))
+            } else {
+                Ok(AudioBeamFrame::new(audio_beam_frame_ptr))
+            }
+        }
+    }
+}
+
+impl Drop for AudioBeamFrameList {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
+                    if let Some(release_fn) = vtbl.Release {
+                        release_fn(self.ptr);
+                    }
+                }
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct AudioBeamFrame {
+    ptr: *mut IAudioBeamFrame,
+}
+
+impl AudioBeamFrame {
+    pub(crate) fn new(ptr: *mut IAudioBeamFrame) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+
+    pub fn get_audio_source(&self) -> Result<AudioSource, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_source_fn = vtbl.get_AudioSource.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut audio_source_ptr: *mut IAudioSource = ptr::null_mut();
+        let hr = unsafe { get_source_fn(self.ptr, &mut audio_source_ptr) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            if audio_source_ptr.is_null() {
+                Err(Error::from(E_POINTER))
+            } else {
+                Ok(AudioSource::new(audio_source_ptr))
+            }
+        }
+    }
+
+    pub fn get_duration(&self) -> Result<TIMESPAN, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_duration_fn = vtbl.get_Duration.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut duration: TIMESPAN = 0;
+        let hr = unsafe { get_duration_fn(self.ptr, &mut duration) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(duration)
+        }
+    }
+
+    pub fn get_audio_beam(&self) -> Result<AudioBeam, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_beam_fn = vtbl.get_AudioBeam.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut audio_beam_ptr: *mut IAudioBeam = ptr::null_mut();
+        let hr = unsafe { get_beam_fn(self.ptr, &mut audio_beam_ptr) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            if audio_beam_ptr.is_null() {
+                Err(Error::from(E_POINTER))
+            } else {
+                Ok(AudioBeam::new(audio_beam_ptr))
+            }
+        }
+    }
+
+    pub fn get_sub_frame_count(&self) -> Result<UINT, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_count_fn = vtbl.get_SubFrameCount.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut count: UINT = 0;
+        let hr = unsafe { get_count_fn(self.ptr, &mut count) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(count)
+        }
+    }
+
+    pub fn get_sub_frame(&self, sub_frame_index: UINT) -> Result<AudioBeamSubFrame, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_sub_frame_fn = vtbl.GetSubFrame.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut audio_beam_sub_frame_ptr: *mut IAudioBeamSubFrame = ptr::null_mut();
+        let hr =
+            unsafe { get_sub_frame_fn(self.ptr, sub_frame_index, &mut audio_beam_sub_frame_ptr) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            if audio_beam_sub_frame_ptr.is_null() {
+                Err(Error::from(E_POINTER))
+            } else {
+                Ok(AudioBeamSubFrame::new(audio_beam_sub_frame_ptr))
+            }
+        }
+    }
+
+    pub fn get_relative_time_start(&self) -> Result<TIMESPAN, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_time_fn = vtbl
+            .get_RelativeTimeStart
+            .ok_or_else(|| Error::from(E_FAIL))?;
+        let mut relative_time: TIMESPAN = 0;
+        let hr = unsafe { get_time_fn(self.ptr, &mut relative_time) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(relative_time)
+        }
+    }
+}
+
+impl Drop for AudioBeamFrame {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
+                    if let Some(release_fn) = vtbl.Release {
+                        release_fn(self.ptr);
+                    }
+                }
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct AudioBeamSubFrame {
+    ptr: *mut IAudioBeamSubFrame,
+}
+
+impl AudioBeamSubFrame {
+    #[allow(dead_code)]
+    pub(crate) fn new(ptr: *mut IAudioBeamSubFrame) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+
+    pub fn get_frame_length_in_bytes(&self) -> Result<UINT, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_length_fn = vtbl
+            .get_FrameLengthInBytes
+            .ok_or_else(|| Error::from(E_FAIL))?;
+        let mut length: UINT = 0;
+        let hr = unsafe { get_length_fn(self.ptr, &mut length) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(length)
+        }
+    }
+
+    pub fn get_duration(&self) -> Result<TIMESPAN, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_duration_fn = vtbl.get_Duration.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut duration: TIMESPAN = 0;
+        let hr = unsafe { get_duration_fn(self.ptr, &mut duration) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(duration)
+        }
+    }
+
+    pub fn get_beam_angle(&self) -> Result<f32, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_angle_fn = vtbl.get_BeamAngle.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut beam_angle: f32 = 0.0;
+        let hr = unsafe { get_angle_fn(self.ptr, &mut beam_angle) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(beam_angle)
+        }
+    }
+
+    pub fn get_beam_angle_confidence(&self) -> Result<f32, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_confidence_fn = vtbl
+            .get_BeamAngleConfidence
+            .ok_or_else(|| Error::from(E_FAIL))?;
+        let mut beam_angle_confidence: f32 = 0.0;
+        let hr = unsafe { get_confidence_fn(self.ptr, &mut beam_angle_confidence) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(beam_angle_confidence)
+        }
+    }
+
+    pub fn get_audio_beam_mode(&self) -> Result<AudioBeamMode, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_mode_fn = vtbl.get_AudioBeamMode.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut audio_beam_mode: AudioBeamMode = AudioBeamMode::AudioBeamMode_Automatic; // Default
+        let hr = unsafe { get_mode_fn(self.ptr, &mut audio_beam_mode) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(audio_beam_mode)
+        }
+    }
+
+    pub fn get_audio_body_correlation_count(&self) -> Result<UINT, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_count_fn = vtbl
+            .get_AudioBodyCorrelationCount
+            .ok_or_else(|| Error::from(E_FAIL))?;
+        let mut count: UINT = 0;
+        let hr = unsafe { get_count_fn(self.ptr, &mut count) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(count)
+        }
+    }
+
+    pub fn get_audio_body_correlation(
+        &self,
+        index: UINT,
+    ) -> Result<*mut IAudioBodyCorrelation, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_correlation_fn = vtbl
+            .GetAudioBodyCorrelation
+            .ok_or_else(|| Error::from(E_FAIL))?;
+        let mut audio_body_correlation: *mut IAudioBodyCorrelation = ptr::null_mut();
+        let hr = unsafe { get_correlation_fn(self.ptr, index, &mut audio_body_correlation) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(audio_body_correlation)
+        }
+    }
+
+    pub fn copy_frame_data_to_array(&self, capacity: UINT, buffer: *mut BYTE) -> Result<(), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let copy_data_fn = vtbl
+            .CopyFrameDataToArray
+            .ok_or_else(|| Error::from(E_FAIL))?;
+        let hr = unsafe { copy_data_fn(self.ptr, capacity, buffer) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(())
+        }
+    }
+
+    pub fn access_underlying_buffer(&self) -> Result<(*mut UINT, *mut *mut BYTE), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let access_buffer_fn = vtbl
+            .AccessUnderlyingBuffer
+            .ok_or_else(|| Error::from(E_FAIL))?;
+        let mut capacity: UINT = 0;
+        let mut buffer: *mut BYTE = ptr::null_mut();
+        let hr = unsafe { access_buffer_fn(self.ptr, &mut capacity, &mut buffer) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok((&mut capacity as *mut UINT, &mut buffer as *mut *mut BYTE))
+        }
+    }
+
+    pub fn get_relative_time(&self) -> Result<TIMESPAN, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_time_fn = vtbl.get_RelativeTime.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut relative_time: TIMESPAN = 0;
+        let hr = unsafe { get_time_fn(self.ptr, &mut relative_time) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(relative_time)
+        }
+    }
+}
+
+impl Drop for AudioBeamSubFrame {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
