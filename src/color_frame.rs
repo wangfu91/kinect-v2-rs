@@ -1,7 +1,7 @@
 use crate::bindings::{
     ColorImageFormat, FrameCapturedStatus, FrameSourceTypes, IColorCameraSettings, IColorFrame,
     IColorFrameArrivedEventArgs, IColorFrameReader, IColorFrameReference, IColorFrameSource,
-    IFrameCapturedEventArgs, IFrameDescription, IKinectSensor, TIMESPAN, WAITABLE_HANDLE,
+    IFrameCapturedEventArgs, IFrameDescription, TIMESPAN, WAITABLE_HANDLE,
 };
 use std::ptr;
 use windows_sys::{
@@ -9,873 +9,961 @@ use windows_sys::{
     core::HRESULT,
 };
 
-impl IFrameDescription {
-    pub fn get_width(&mut self) -> Result<i32, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_width_fn) = vtbl.get_Width {
-                let mut width_val: i32 = 0;
-                let hr = unsafe { get_width_fn(self, &mut width_val) };
-                if hr == 0 { Ok(width_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
-        }
+pub struct FrameDescription {
+    ptr: *mut IFrameDescription,
+}
+
+impl FrameDescription {
+    pub(crate) fn new(ptr: *mut IFrameDescription) -> Self {
+        assert!(!ptr.is_null(), "FrameDescription pointer cannot be null");
+        Self { ptr }
     }
 
-    pub fn get_height(&mut self) -> Result<i32, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_height_fn) = vtbl.get_Height {
-                let mut height_val: i32 = 0;
-                let hr = unsafe { get_height_fn(self, &mut height_val) };
-                if hr == 0 { Ok(height_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_width(&self) -> Result<i32, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_Width.ok_or(E_FAIL)?;
+        let mut width: i32 = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut width) };
+        if hr == 0 { Ok(width) } else { Err(hr) }
     }
 
-    pub fn get_horizontal_field_of_view(&mut self) -> Result<f32, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_hfov_fn) = vtbl.get_HorizontalFieldOfView {
-                let mut hfov_val: f32 = 0.0;
-                let hr = unsafe { get_hfov_fn(self, &mut hfov_val) };
-                if hr == 0 { Ok(hfov_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_height(&self) -> Result<i32, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_Height.ok_or(E_FAIL)?;
+        let mut height: i32 = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut height) };
+        if hr == 0 { Ok(height) } else { Err(hr) }
     }
 
-    pub fn get_vertical_field_of_view(&mut self) -> Result<f32, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_vfov_fn) = vtbl.get_VerticalFieldOfView {
-                let mut vfov_val: f32 = 0.0;
-                let hr = unsafe { get_vfov_fn(self, &mut vfov_val) };
-                if hr == 0 { Ok(vfov_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_horizontal_field_of_view(&self) -> Result<f32, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_HorizontalFieldOfView.ok_or(E_FAIL)?;
+        let mut fov: f32 = 0.0;
+        let hr = unsafe { get_fn(self.ptr, &mut fov) };
+        if hr == 0 { Ok(fov) } else { Err(hr) }
     }
 
-    pub fn get_diagonal_field_of_view(&mut self) -> Result<f32, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_dfov_fn) = vtbl.get_DiagonalFieldOfView {
-                let mut dfov_val: f32 = 0.0;
-                let hr = unsafe { get_dfov_fn(self, &mut dfov_val) };
-                if hr == 0 { Ok(dfov_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_vertical_field_of_view(&self) -> Result<f32, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_VerticalFieldOfView.ok_or(E_FAIL)?;
+        let mut fov: f32 = 0.0;
+        let hr = unsafe { get_fn(self.ptr, &mut fov) };
+        if hr == 0 { Ok(fov) } else { Err(hr) }
     }
 
-    pub fn get_length_in_pixels(&mut self) -> Result<u32, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_length_fn) = vtbl.get_LengthInPixels {
-                let mut length_val: u32 = 0;
-                let hr = unsafe { get_length_fn(self, &mut length_val) };
-                if hr == 0 { Ok(length_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_diagonal_field_of_view(&self) -> Result<f32, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_DiagonalFieldOfView.ok_or(E_FAIL)?;
+        let mut fov: f32 = 0.0;
+        let hr = unsafe { get_fn(self.ptr, &mut fov) };
+        if hr == 0 { Ok(fov) } else { Err(hr) }
     }
 
-    pub fn get_bytes_per_pixel(&mut self) -> Result<u32, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_bpp_fn) = vtbl.get_BytesPerPixel {
-                let mut bpp_val: u32 = 0;
-                let hr = unsafe { get_bpp_fn(self, &mut bpp_val) };
-                if hr == 0 { Ok(bpp_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_length_in_pixels(&self) -> Result<u32, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_LengthInPixels.ok_or(E_FAIL)?;
+        let mut length: u32 = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut length) };
+        if hr == 0 { Ok(length) } else { Err(hr) }
     }
 
-    pub fn release(&mut self) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(release_fn) = vtbl.Release {
-                let hr = unsafe { release_fn(self) };
-                if hr == 0 { Ok(()) } else { Err(hr as i32) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_bytes_per_pixel(&self) -> Result<u32, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_BytesPerPixel.ok_or(E_FAIL)?;
+        let mut bpp: u32 = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut bpp) };
+        if hr == 0 { Ok(bpp) } else { Err(hr) }
     }
 }
 
-impl Drop for IFrameDescription {
+impl Drop for FrameDescription {
     fn drop(&mut self) {
-        if let Err(hr) = self.release() {
-            eprintln!("Failed to release IFrameDescription: HRESULT = {:#X}", hr);
+        if !self.ptr.is_null() {
+            unsafe {
+                let vtbl = (*self.ptr)
+                    .lpVtbl
+                    .as_ref()
+                    .expect("VTable pointer is null in Drop");
+                let release_fn = vtbl
+                    .Release
+                    .expect("Release function pointer is null in Drop");
+                release_fn(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
         }
     }
 }
 
-impl IFrameCapturedEventArgs {
-    pub fn get_frame_type(&mut self) -> Result<FrameSourceTypes, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_frame_type_fn) = vtbl.get_FrameType {
-                let mut frame_type_val: FrameSourceTypes = FrameSourceTypes::FrameSourceTypes_None;
-                let hr = unsafe { get_frame_type_fn(self, &mut frame_type_val) };
-                if hr == 0 { Ok(frame_type_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
-        }
+pub struct FrameCapturedEventArgs {
+    ptr: *mut IFrameCapturedEventArgs,
+}
+
+impl FrameCapturedEventArgs {
+    pub(crate) fn new(ptr: *mut IFrameCapturedEventArgs) -> Self {
+        assert!(
+            !ptr.is_null(),
+            "FrameCapturedEventArgs pointer cannot be null"
+        );
+        Self { ptr }
     }
 
-    pub fn get_frame_status(&mut self) -> Result<FrameCapturedStatus, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_frame_status_fn) = vtbl.get_FrameStatus {
-                let mut frame_status_val: FrameCapturedStatus =
-                    FrameCapturedStatus::FrameCapturedStatus_Unknown;
-                let hr = unsafe { get_frame_status_fn(self, &mut frame_status_val) };
-                if hr == 0 {
-                    Ok(frame_status_val)
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_frame_type(&self) -> Result<FrameSourceTypes, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_FrameType.ok_or(E_FAIL)?;
+        let mut frame_type: FrameSourceTypes = FrameSourceTypes::FrameSourceTypes_None;
+        let hr = unsafe { get_fn(self.ptr, &mut frame_type) };
+        if hr == 0 { Ok(frame_type) } else { Err(hr) }
     }
 
-    pub fn get_relative_time(&mut self) -> Result<TIMESPAN, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_relative_time_fn) = vtbl.get_RelativeTime {
-                let mut relative_time_val: TIMESPAN = 0;
-                let hr = unsafe { get_relative_time_fn(self, &mut relative_time_val) };
-                if hr == 0 {
-                    Ok(relative_time_val)
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_frame_status(&self) -> Result<FrameCapturedStatus, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_FrameStatus.ok_or(E_FAIL)?;
+        let mut status: FrameCapturedStatus = FrameCapturedStatus::FrameCapturedStatus_Unknown;
+        let hr = unsafe { get_fn(self.ptr, &mut status) };
+        if hr == 0 { Ok(status) } else { Err(hr) }
     }
 
-    pub fn release(&mut self) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(release_fn) = vtbl.Release {
-                let hr = unsafe { release_fn(self) };
-                if hr == 0 { Ok(()) } else { Err(hr as i32) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_relative_time(&self) -> Result<TIMESPAN, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_RelativeTime.ok_or(E_FAIL)?;
+        let mut time: TIMESPAN = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut time) };
+        if hr == 0 { Ok(time) } else { Err(hr) }
     }
 }
 
-impl Drop for IFrameCapturedEventArgs {
+impl Drop for FrameCapturedEventArgs {
     fn drop(&mut self) {
-        if let Err(hr) = self.release() {
-            eprintln!(
-                "Failed to release IFrameCapturedEventArgs: HRESULT = {:#X}",
-                hr
-            );
+        if !self.ptr.is_null() {
+            unsafe {
+                let vtbl = (*self.ptr)
+                    .lpVtbl
+                    .as_ref()
+                    .expect("VTable pointer is null in Drop");
+                let release_fn = vtbl
+                    .Release
+                    .expect("Release function pointer is null in Drop");
+                release_fn(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
         }
     }
 }
 
-impl IColorFrame {
-    pub fn get_frame_description(&mut self) -> Result<IFrameDescription, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_desc_fn) = vtbl.get_FrameDescription {
-                let mut desc_ptr: *mut IFrameDescription = ptr::null_mut();
-                let hr = unsafe { get_desc_fn(self, &mut desc_ptr) };
-                if hr == 0 {
-                    Ok(unsafe { ptr::read(desc_ptr) })
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
+pub struct ColorFrame {
+    ptr: *mut IColorFrame,
+}
+
+impl ColorFrame {
+    pub(crate) fn new(ptr: *mut IColorFrame) -> Self {
+        assert!(!ptr.is_null(), "ColorFrame pointer cannot be null");
+        Self { ptr }
+    }
+
+    pub fn get_frame_description(&self) -> Result<FrameDescription, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_FrameDescription.ok_or(E_FAIL)?;
+        let mut desc_ptr: *mut IFrameDescription = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, &mut desc_ptr) };
+        if hr == 0 {
+            Ok(FrameDescription::new(desc_ptr))
         } else {
-            Err(E_POINTER)
+            Err(hr)
         }
     }
 
-    pub fn get_raw_color_image_format(&mut self) -> Result<ColorImageFormat, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_format_fn) = vtbl.get_RawColorImageFormat {
-                let mut format_val: ColorImageFormat = ColorImageFormat::ColorImageFormat_None;
-                let hr = unsafe { get_format_fn(self, &mut format_val) };
-                if hr == 0 { Ok(format_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_raw_color_image_format(&self) -> Result<ColorImageFormat, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_RawColorImageFormat.ok_or(E_FAIL)?;
+        let mut format: ColorImageFormat = ColorImageFormat::ColorImageFormat_None;
+        let hr = unsafe { get_fn(self.ptr, &mut format) };
+        if hr == 0 { Ok(format) } else { Err(hr) }
     }
 
     pub fn copy_raw_frame_data_to_array(
-        &mut self,
+        &self,
         capacity: u32,
         frame_data: *mut u8,
     ) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(copy_fn) = vtbl.CopyRawFrameDataToArray {
-                let hr = unsafe { copy_fn(self, capacity, frame_data) };
-                if hr == 0 { Ok(()) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let copy_fn = vtbl.CopyRawFrameDataToArray.ok_or(E_FAIL)?;
+        let hr = unsafe { copy_fn(self.ptr, capacity, frame_data) };
+        if hr == 0 { Ok(()) } else { Err(hr) }
     }
 
     pub fn access_raw_underlying_buffer(
-        &mut self,
+        &self,
         capacity: &mut u32,
         buffer: &mut *mut u8,
     ) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(access_fn) = vtbl.AccessRawUnderlyingBuffer {
-                let hr = unsafe { access_fn(self, capacity, buffer) };
-                if hr == 0 { Ok(()) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let access_fn = vtbl.AccessRawUnderlyingBuffer.ok_or(E_FAIL)?;
+        let hr = unsafe { access_fn(self.ptr, capacity, buffer) };
+        if hr == 0 { Ok(()) } else { Err(hr) }
     }
 
     pub fn copy_converted_frame_data_to_array(
-        &mut self,
+        &self,
         capacity: u32,
         frame_data: *mut u8,
         color_format: ColorImageFormat,
     ) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(copy_fn) = vtbl.CopyConvertedFrameDataToArray {
-                let hr = unsafe { copy_fn(self, capacity, frame_data, color_format) };
-                if hr == 0 { Ok(()) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let copy_fn = vtbl.CopyConvertedFrameDataToArray.ok_or(E_FAIL)?;
+        let hr = unsafe { copy_fn(self.ptr, capacity, frame_data, color_format) };
+        if hr == 0 { Ok(()) } else { Err(hr) }
     }
 
     pub fn create_frame_description(
-        &mut self,
+        &self,
         format: ColorImageFormat,
-    ) -> Result<IFrameDescription, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(create_desc_fn) = vtbl.CreateFrameDescription {
-                let mut desc_ptr: *mut IFrameDescription = ptr::null_mut();
-                let hr = unsafe { create_desc_fn(self, format, &mut desc_ptr) };
-                if hr == 0 {
-                    Ok(unsafe { ptr::read(desc_ptr) })
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
+    ) -> Result<FrameDescription, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let create_fn = vtbl.CreateFrameDescription.ok_or(E_FAIL)?;
+        let mut desc_ptr: *mut IFrameDescription = ptr::null_mut();
+        let hr = unsafe { create_fn(self.ptr, format, &mut desc_ptr) };
+        if hr == 0 {
+            Ok(FrameDescription::new(desc_ptr))
         } else {
-            Err(E_POINTER)
+            Err(hr)
         }
     }
 
-    pub fn get_color_camera_settings(&mut self) -> Result<IColorCameraSettings, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_settings_fn) = vtbl.get_ColorCameraSettings {
-                let mut settings_ptr: *mut IColorCameraSettings = ptr::null_mut();
-                let hr = unsafe { get_settings_fn(self, &mut settings_ptr) };
-                if hr == 0 {
-                    Ok(unsafe { ptr::read(settings_ptr) })
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
+    pub fn get_color_camera_settings(&self) -> Result<ColorCameraSettings, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_ColorCameraSettings.ok_or(E_FAIL)?;
+        let mut settings_ptr: *mut IColorCameraSettings = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, &mut settings_ptr) };
+        if hr == 0 {
+            Ok(ColorCameraSettings::new(settings_ptr))
         } else {
-            Err(E_POINTER)
+            Err(hr)
         }
     }
 
-    pub fn get_relative_time(&mut self) -> Result<TIMESPAN, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_time_fn) = vtbl.get_RelativeTime {
-                let mut time_val: TIMESPAN = 0;
-                let hr = unsafe { get_time_fn(self, &mut time_val) };
-                if hr == 0 { Ok(time_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_relative_time(&self) -> Result<TIMESPAN, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_RelativeTime.ok_or(E_FAIL)?;
+        let mut time: TIMESPAN = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut time) };
+        if hr == 0 { Ok(time) } else { Err(hr) }
     }
 
-    pub fn get_color_frame_source(&mut self) -> Result<IColorFrameSource, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_source_fn) = vtbl.get_ColorFrameSource {
-                let mut source_ptr: *mut IColorFrameSource = ptr::null_mut();
-                let hr = unsafe { get_source_fn(self, &mut source_ptr) };
-                if hr == 0 {
-                    Ok(unsafe { ptr::read(source_ptr) })
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_color_frame_source(&self) -> Result<ColorFrameSource, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
-    }
-
-    pub fn release(&mut self) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(release_fn) = vtbl.Release {
-                let hr = unsafe { release_fn(self) };
-                if hr == 0 { Ok(()) } else { Err(hr as i32) }
-            } else {
-                Err(E_FAIL)
-            }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_ColorFrameSource.ok_or(E_FAIL)?;
+        let mut source_ptr: *mut IColorFrameSource = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, &mut source_ptr) };
+        if hr == 0 {
+            Ok(ColorFrameSource::new(source_ptr))
         } else {
-            Err(E_POINTER)
+            Err(hr)
         }
     }
 }
 
-impl Drop for IColorFrame {
+impl Drop for ColorFrame {
     fn drop(&mut self) {
-        if let Err(hr) = self.release() {
-            eprintln!("Failed to release IColorFrame: HRESULT = {:#X}", hr);
+        if !self.ptr.is_null() {
+            unsafe {
+                let vtbl = (*self.ptr)
+                    .lpVtbl
+                    .as_ref()
+                    .expect("VTable pointer is null in Drop");
+                let release_fn = vtbl
+                    .Release
+                    .expect("Release function pointer is null in Drop");
+                release_fn(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
         }
     }
 }
 
-impl IColorFrameArrivedEventArgs {
-    pub fn get_frame_reference(&mut self) -> Result<IColorFrameReference, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_ref_fn) = vtbl.get_FrameReference {
-                let mut ref_ptr: *mut IColorFrameReference = ptr::null_mut();
-                let hr = unsafe { get_ref_fn(self, &mut ref_ptr) };
-                if hr == 0 {
-                    Ok(unsafe { ptr::read(ref_ptr) })
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
-        }
+pub struct ColorFrameArrivedEventArgs {
+    ptr: *mut IColorFrameArrivedEventArgs,
+}
+
+impl ColorFrameArrivedEventArgs {
+    pub(crate) fn new(ptr: *mut IColorFrameArrivedEventArgs) -> Self {
+        assert!(
+            !ptr.is_null(),
+            "ColorFrameArrivedEventArgs pointer cannot be null"
+        );
+        Self { ptr }
     }
 
-    pub fn release(&mut self) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(release_fn) = vtbl.Release {
-                let hr = unsafe { release_fn(self) };
-                if hr == 0 { Ok(()) } else { Err(hr as i32) }
-            } else {
-                Err(E_FAIL)
-            }
+    pub fn get_frame_reference(&self) -> Result<ColorFrameReference, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_FrameReference.ok_or(E_FAIL)?;
+        let mut ref_ptr: *mut IColorFrameReference = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, &mut ref_ptr) };
+        if hr == 0 {
+            Ok(ColorFrameReference::new(ref_ptr))
         } else {
-            Err(E_POINTER)
+            Err(hr)
         }
     }
 }
 
-impl Drop for IColorFrameArrivedEventArgs {
+impl Drop for ColorFrameArrivedEventArgs {
     fn drop(&mut self) {
-        if let Err(hr) = self.release() {
-            eprintln!(
-                "Failed to release IColorFrameArrivedEventArgs: HRESULT = {:#X}",
-                hr
-            );
+        if !self.ptr.is_null() {
+            unsafe {
+                let vtbl = (*self.ptr)
+                    .lpVtbl
+                    .as_ref()
+                    .expect("VTable pointer is null in Drop");
+                let release_fn = vtbl
+                    .Release
+                    .expect("Release function pointer is null in Drop");
+                release_fn(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
         }
     }
 }
 
-impl IColorFrameReference {
-    pub fn acquire_frame(&mut self) -> Result<IColorFrame, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(acquire_frame_fn) = vtbl.AcquireFrame {
-                let mut frame_ptr: *mut IColorFrame = ptr::null_mut();
-                let hr = unsafe { acquire_frame_fn(self, &mut frame_ptr) };
-                if hr == 0 {
-                    Ok(unsafe { ptr::read(frame_ptr) })
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
+pub struct ColorFrameReference {
+    ptr: *mut IColorFrameReference,
+}
+
+impl ColorFrameReference {
+    pub(crate) fn new(ptr: *mut IColorFrameReference) -> Self {
+        assert!(!ptr.is_null(), "ColorFrameReference pointer cannot be null");
+        Self { ptr }
+    }
+
+    pub fn acquire_frame(&self) -> Result<ColorFrame, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let acquire_fn = vtbl.AcquireFrame.ok_or(E_FAIL)?;
+        let mut frame_ptr: *mut IColorFrame = ptr::null_mut();
+        let hr = unsafe { acquire_fn(self.ptr, &mut frame_ptr) };
+        if hr == 0 {
+            Ok(ColorFrame::new(frame_ptr))
         } else {
-            Err(E_POINTER)
+            Err(hr)
         }
     }
 
-    pub fn get_relative_time(&mut self) -> Result<TIMESPAN, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_time_fn) = vtbl.get_RelativeTime {
-                let mut time_val: TIMESPAN = 0;
-                let hr = unsafe { get_time_fn(self, &mut time_val) };
-                if hr == 0 { Ok(time_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_relative_time(&self) -> Result<TIMESPAN, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
-    }
-
-    pub fn release(&mut self) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(release_fn) = vtbl.Release {
-                let hr = unsafe { release_fn(self) };
-                if hr == 0 { Ok(()) } else { Err(hr as i32) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
-        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_RelativeTime.ok_or(E_FAIL)?;
+        let mut time: TIMESPAN = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut time) };
+        if hr == 0 { Ok(time) } else { Err(hr) }
     }
 }
 
-impl Drop for IColorFrameReference {
+impl Drop for ColorFrameReference {
     fn drop(&mut self) {
-        if let Err(hr) = self.release() {
-            eprintln!(
-                "Failed to release IColorFrameReference: HRESULT = {:#X}",
-                hr
-            );
+        if !self.ptr.is_null() {
+            unsafe {
+                let vtbl = (*self.ptr)
+                    .lpVtbl
+                    .as_ref()
+                    .expect("VTable pointer is null in Drop");
+                let release_fn = vtbl
+                    .Release
+                    .expect("Release function pointer is null in Drop");
+                release_fn(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
         }
     }
 }
 
-impl IColorCameraSettings {
-    pub fn get_exposure_time(&mut self) -> Result<TIMESPAN, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_time_fn) = vtbl.get_ExposureTime {
-                let mut time_val: TIMESPAN = 0;
-                let hr = unsafe { get_time_fn(self, &mut time_val) };
-                if hr == 0 { Ok(time_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
-        }
+pub struct ColorCameraSettings {
+    ptr: *mut IColorCameraSettings,
+}
+
+impl ColorCameraSettings {
+    pub(crate) fn new(ptr: *mut IColorCameraSettings) -> Self {
+        assert!(!ptr.is_null(), "ColorCameraSettings pointer cannot be null");
+        Self { ptr }
     }
 
-    pub fn get_frame_interval(&mut self) -> Result<TIMESPAN, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_interval_fn) = vtbl.get_FrameInterval {
-                let mut interval_val: TIMESPAN = 0;
-                let hr = unsafe { get_interval_fn(self, &mut interval_val) };
-                if hr == 0 { Ok(interval_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_exposure_time(&self) -> Result<TIMESPAN, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_ExposureTime.ok_or(E_FAIL)?;
+        let mut time: TIMESPAN = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut time) };
+        if hr == 0 { Ok(time) } else { Err(hr) }
     }
 
-    pub fn get_gain(&mut self) -> Result<f32, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_gain_fn) = vtbl.get_Gain {
-                let mut gain_val: f32 = 0.0;
-                let hr = unsafe { get_gain_fn(self, &mut gain_val) };
-                if hr == 0 { Ok(gain_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_frame_interval(&self) -> Result<TIMESPAN, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_FrameInterval.ok_or(E_FAIL)?;
+        let mut interval: TIMESPAN = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut interval) };
+        if hr == 0 { Ok(interval) } else { Err(hr) }
     }
 
-    pub fn get_gamma(&mut self) -> Result<f32, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_gamma_fn) = vtbl.get_Gamma {
-                let mut gamma_val: f32 = 0.0;
-                let hr = unsafe { get_gamma_fn(self, &mut gamma_val) };
-                if hr == 0 { Ok(gamma_val) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_gain(&self) -> Result<f32, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_Gain.ok_or(E_FAIL)?;
+        let mut gain: f32 = 0.0;
+        let hr = unsafe { get_fn(self.ptr, &mut gain) };
+        if hr == 0 { Ok(gain) } else { Err(hr) }
     }
 
-    pub fn release(&mut self) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(release_fn) = vtbl.Release {
-                let hr = unsafe { release_fn(self) };
-                if hr == 0 { Ok(()) } else { Err(hr as i32) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_gamma(&self) -> Result<f32, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_Gamma.ok_or(E_FAIL)?;
+        let mut gamma: f32 = 0.0;
+        let hr = unsafe { get_fn(self.ptr, &mut gamma) };
+        if hr == 0 { Ok(gamma) } else { Err(hr) }
     }
 }
 
-impl Drop for IColorCameraSettings {
+impl Drop for ColorCameraSettings {
     fn drop(&mut self) {
-        if let Err(hr) = self.release() {
-            eprintln!(
-                "Failed to release IColorCameraSettings: HRESULT = {:#X}",
-                hr
-            );
+        if !self.ptr.is_null() {
+            unsafe {
+                let vtbl = (*self.ptr)
+                    .lpVtbl
+                    .as_ref()
+                    .expect("VTable pointer is null in Drop");
+                let release_fn = vtbl
+                    .Release
+                    .expect("Release function pointer is null in Drop");
+                release_fn(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
         }
     }
 }
 
-impl IColorFrameReader {
+pub struct ColorFrameReader {
+    ptr: *mut IColorFrameReader,
+}
+
+impl ColorFrameReader {
+    pub(crate) fn new(ptr: *mut IColorFrameReader) -> Self {
+        assert!(!ptr.is_null(), "ColorFrameReader pointer cannot be null");
+        Self { ptr }
+    }
+
     pub fn subscribe_frame_arrived(
-        &mut self,
+        &self,
         waitable_handle: &mut WAITABLE_HANDLE,
     ) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(subscribe_fn) = vtbl.SubscribeFrameArrived {
-                let hr = unsafe { subscribe_fn(self, waitable_handle) };
-                if hr == 0 { Ok(()) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let sub_fn = vtbl.SubscribeFrameArrived.ok_or(E_FAIL)?;
+        let hr = unsafe { sub_fn(self.ptr, waitable_handle) };
+        if hr == 0 { Ok(()) } else { Err(hr) }
     }
 
     pub fn unsubscribe_frame_arrived(
-        &mut self,
+        &self,
         waitable_handle: WAITABLE_HANDLE,
     ) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(unsubscribe_fn) = vtbl.UnsubscribeFrameArrived {
-                let hr = unsafe { unsubscribe_fn(self, waitable_handle) };
-                if hr == 0 { Ok(()) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let unsub_fn = vtbl.UnsubscribeFrameArrived.ok_or(E_FAIL)?;
+        let hr = unsafe { unsub_fn(self.ptr, waitable_handle) };
+        if hr == 0 { Ok(()) } else { Err(hr) }
     }
 
     pub fn get_frame_arrived_event_data(
-        &mut self,
+        &self,
         waitable_handle: WAITABLE_HANDLE,
-    ) -> Result<IColorFrameArrivedEventArgs, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_data_fn) = vtbl.GetFrameArrivedEventData {
-                let mut event_data_ptr: *mut IColorFrameArrivedEventArgs = ptr::null_mut();
-                let hr = unsafe { get_data_fn(self, waitable_handle, &mut event_data_ptr) };
-                if hr == 0 {
-                    Ok(unsafe { ptr::read(event_data_ptr) })
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
+    ) -> Result<ColorFrameArrivedEventArgs, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.GetFrameArrivedEventData.ok_or(E_FAIL)?;
+        let mut args_ptr: *mut IColorFrameArrivedEventArgs = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, waitable_handle, &mut args_ptr) };
+        if hr == 0 {
+            Ok(ColorFrameArrivedEventArgs::new(args_ptr))
         } else {
-            Err(E_POINTER)
+            Err(hr)
         }
     }
 
-    pub fn acquire_latest_frame(&mut self) -> Result<IColorFrame, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(acquire_fn) = vtbl.AcquireLatestFrame {
-                let mut frame_ptr: *mut IColorFrame = ptr::null_mut();
-                let hr = unsafe { acquire_fn(self, &mut frame_ptr) };
-                if hr == 0 {
-                    Ok(unsafe { ptr::read(frame_ptr) })
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
+    pub fn acquire_latest_frame(&self) -> Result<ColorFrame, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let acquire_fn = vtbl.AcquireLatestFrame.ok_or(E_FAIL)?;
+        let mut frame_ptr: *mut IColorFrame = ptr::null_mut();
+        let hr = unsafe { acquire_fn(self.ptr, &mut frame_ptr) };
+        if hr == 0 {
+            Ok(ColorFrame::new(frame_ptr))
         } else {
-            Err(E_POINTER)
+            Err(hr)
         }
     }
 
-    pub fn get_is_paused(&mut self) -> Result<bool, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_paused_fn) = vtbl.get_IsPaused {
-                let mut paused_val: BOOLEAN = 0;
-                let hr = unsafe { get_paused_fn(self, &mut paused_val) };
-                if hr == 0 {
-                    Ok(paused_val != 0)
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_is_paused(&self) -> Result<bool, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_IsPaused.ok_or(E_FAIL)?;
+        let mut paused: BOOLEAN = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut paused) };
+        if hr == 0 { Ok(paused != 0) } else { Err(hr) }
     }
 
-    pub fn put_is_paused(&mut self, is_paused: bool) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(put_paused_fn) = vtbl.put_IsPaused {
-                let hr = unsafe { put_paused_fn(self, if is_paused { 1 } else { 0 }) };
-                if hr == 0 { Ok(()) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn put_is_paused(&self, is_paused: bool) -> Result<(), HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let put_fn = vtbl.put_IsPaused.ok_or(E_FAIL)?;
+        let hr = unsafe { put_fn(self.ptr, is_paused as BOOLEAN) };
+        if hr == 0 { Ok(()) } else { Err(hr) }
     }
 
-    pub fn get_color_frame_source(&mut self) -> Result<IColorFrameSource, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_source_fn) = vtbl.get_ColorFrameSource {
-                let mut source_ptr: *mut IColorFrameSource = ptr::null_mut();
-                let hr = unsafe { get_source_fn(self, &mut source_ptr) };
-                if hr == 0 {
-                    Ok(unsafe { ptr::read(source_ptr) })
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_color_frame_source(&self) -> Result<ColorFrameSource, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
-    }
-
-    pub fn release(&mut self) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(release_fn) = vtbl.Release {
-                let hr = unsafe { release_fn(self) };
-                if hr == 0 { Ok(()) } else { Err(hr as i32) }
-            } else {
-                Err(E_FAIL)
-            }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_ColorFrameSource.ok_or(E_FAIL)?;
+        let mut source_ptr: *mut IColorFrameSource = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, &mut source_ptr) };
+        if hr == 0 {
+            Ok(ColorFrameSource::new(source_ptr))
         } else {
-            Err(E_POINTER)
+            Err(hr)
         }
     }
 }
 
-impl Drop for IColorFrameReader {
+impl Drop for ColorFrameReader {
     fn drop(&mut self) {
-        if let Err(hr) = self.release() {
-            eprintln!("Failed to release IColorFrameReader: HRESULT = {:#X}", hr);
+        if !self.ptr.is_null() {
+            unsafe {
+                let vtbl = (*self.ptr)
+                    .lpVtbl
+                    .as_ref()
+                    .expect("VTable pointer is null in Drop");
+                let release_fn = vtbl
+                    .Release
+                    .expect("Release function pointer is null in Drop");
+                release_fn(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
         }
     }
 }
 
-impl IColorFrameSource {
+pub struct ColorFrameSource {
+    pub(crate) ptr: *mut IColorFrameSource, // Made pub(crate) for kinect_sensor.rs
+}
+
+impl ColorFrameSource {
+    pub(crate) fn new(ptr: *mut IColorFrameSource) -> Self {
+        assert!(!ptr.is_null(), "ColorFrameSource pointer cannot be null");
+        Self { ptr }
+    }
+
     pub fn subscribe_frame_captured(
-        &mut self,
+        &self,
         waitable_handle: &mut WAITABLE_HANDLE,
     ) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(subscribe_fn) = vtbl.SubscribeFrameCaptured {
-                let hr = unsafe { subscribe_fn(self, waitable_handle) };
-                if hr == 0 { Ok(()) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let sub_fn = vtbl.SubscribeFrameCaptured.ok_or(E_FAIL)?;
+        let hr = unsafe { sub_fn(self.ptr, waitable_handle) };
+        if hr == 0 { Ok(()) } else { Err(hr) }
     }
 
     pub fn unsubscribe_frame_captured(
-        &mut self,
+        &self,
         waitable_handle: WAITABLE_HANDLE,
     ) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(unsubscribe_fn) = vtbl.UnsubscribeFrameCaptured {
-                let hr = unsafe { unsubscribe_fn(self, waitable_handle) };
-                if hr == 0 { Ok(()) } else { Err(hr) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let unsub_fn = vtbl.UnsubscribeFrameCaptured.ok_or(E_FAIL)?;
+        let hr = unsafe { unsub_fn(self.ptr, waitable_handle) };
+        if hr == 0 { Ok(()) } else { Err(hr) }
     }
 
     pub fn get_frame_captured_event_data(
-        &mut self,
+        &self,
         waitable_handle: WAITABLE_HANDLE,
-    ) -> Result<IFrameCapturedEventArgs, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_data_fn) = vtbl.GetFrameCapturedEventData {
-                let mut event_data_ptr: *mut IFrameCapturedEventArgs = ptr::null_mut();
-                let hr = unsafe { get_data_fn(self, waitable_handle, &mut event_data_ptr) };
-                if hr == 0 {
-                    Ok(unsafe { ptr::read(event_data_ptr) })
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
+    ) -> Result<FrameCapturedEventArgs, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.GetFrameCapturedEventData.ok_or(E_FAIL)?;
+        let mut args_ptr: *mut IFrameCapturedEventArgs = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, waitable_handle, &mut args_ptr) };
+        if hr == 0 {
+            Ok(FrameCapturedEventArgs::new(args_ptr))
         } else {
-            Err(E_POINTER)
+            Err(hr)
         }
     }
 
-    pub fn get_is_active(&mut self) -> Result<bool, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_is_active_fn) = vtbl.get_IsActive {
-                let mut is_active_val: BOOLEAN = 0;
-                let hr = unsafe { get_is_active_fn(self, &mut is_active_val) };
-                if hr == 0 {
-                    Ok(is_active_val != 0)
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+    pub fn get_is_active(&self) -> Result<bool, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
         }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_IsActive.ok_or(E_FAIL)?;
+        let mut active: BOOLEAN = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut active) };
+        if hr == 0 { Ok(active != 0) } else { Err(hr) }
     }
 
-    pub fn open_reader(&mut self) -> Result<IColorFrameReader, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(open_reader_fn) = vtbl.OpenReader {
-                let mut reader_ptr: *mut IColorFrameReader = ptr::null_mut();
-                let hr = unsafe { open_reader_fn(self, &mut reader_ptr) };
-                if hr == 0 {
-                    Ok(unsafe { ptr::read(reader_ptr) })
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
+    pub fn open_reader(&self) -> Result<ColorFrameReader, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let open_fn = vtbl.OpenReader.ok_or(E_FAIL)?;
+        let mut reader_ptr: *mut IColorFrameReader = ptr::null_mut();
+        let hr = unsafe { open_fn(self.ptr, &mut reader_ptr) };
+        if hr == 0 {
+            Ok(ColorFrameReader::new(reader_ptr))
         } else {
-            Err(E_POINTER)
+            Err(hr)
         }
     }
 
     pub fn create_frame_description(
-        &mut self,
+        &self,
         format: ColorImageFormat,
-    ) -> Result<IFrameDescription, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(create_desc_fn) = vtbl.CreateFrameDescription {
-                let mut desc_ptr: *mut IFrameDescription = ptr::null_mut();
-                let hr = unsafe { create_desc_fn(self, format, &mut desc_ptr) };
-                if hr == 0 {
-                    Ok(unsafe { ptr::read(desc_ptr) })
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
+    ) -> Result<FrameDescription, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let create_fn = vtbl.CreateFrameDescription.ok_or(E_FAIL)?;
+        let mut desc_ptr: *mut IFrameDescription = ptr::null_mut();
+        let hr = unsafe { create_fn(self.ptr, format, &mut desc_ptr) };
+        if hr == 0 {
+            Ok(FrameDescription::new(desc_ptr))
         } else {
-            Err(E_POINTER)
+            Err(hr)
         }
     }
 
-    pub fn get_frame_description(&mut self) -> Result<IFrameDescription, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_desc_fn) = vtbl.get_FrameDescription {
-                let mut desc_ptr: *mut IFrameDescription = ptr::null_mut();
-                let hr = unsafe { get_desc_fn(self, &mut desc_ptr) };
-                if hr == 0 {
-                    Ok(unsafe { ptr::read(desc_ptr) })
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
-            }
+    pub fn get_frame_description(&self) -> Result<FrameDescription, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_FrameDescription.ok_or(E_FAIL)?;
+        let mut desc_ptr: *mut IFrameDescription = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, &mut desc_ptr) };
+        if hr == 0 {
+            Ok(FrameDescription::new(desc_ptr))
         } else {
-            Err(E_POINTER)
+            Err(hr)
         }
     }
 
-    pub fn get_kinect_sensor(&mut self) -> Result<IKinectSensor, HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_sensor_fn) = vtbl.get_KinectSensor {
-                let mut sensor_ptr: *mut IKinectSensor = ptr::null_mut();
-                let hr = unsafe { get_sensor_fn(self, &mut sensor_ptr) };
-                if hr == 0 {
-                    Ok(unsafe { ptr::read(sensor_ptr) })
-                } else {
-                    Err(hr)
-                }
-            } else {
-                Err(E_FAIL)
+    // Not including get_kinect_sensor to avoid circular dependencies with KinectSensor wrapper
+    // If needed, it should return Result<*mut IKinectSensor, HRESULT> or a weak reference.
+}
+
+impl Drop for ColorFrameSource {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                let vtbl = (*self.ptr)
+                    .lpVtbl
+                    .as_ref()
+                    .expect("VTable pointer is null in Drop");
+                let release_fn = vtbl
+                    .Release
+                    .expect("Release function pointer is null in Drop");
+                release_fn(self.ptr);
             }
-        } else {
-            Err(E_POINTER)
-        }
-    }
-    pub fn release(&mut self) -> Result<(), HRESULT> {
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(release_fn) = vtbl.Release {
-                let hr = unsafe { release_fn(self) };
-                if hr == 0 { Ok(()) } else { Err(hr as i32) }
-            } else {
-                Err(E_FAIL)
-            }
-        } else {
-            Err(E_POINTER)
+            self.ptr = ptr::null_mut();
         }
     }
 }
 
-impl Drop for IColorFrameSource {
+// Define other wrapper structs (AudioSource, BodyFrameSource, etc.) here as needed.
+// For brevity, only the ones directly related to color_frame.rs are fully fleshed out.
+
+// Placeholder for other wrapper types from kinect_sensor.rs that are used here
+// These would be defined similarly in their respective modules or a shared module
+
+pub struct AudioSource {
+    ptr: *mut crate::bindings::IAudioSource,
+}
+impl AudioSource {
+    pub(crate) fn new(ptr: *mut crate::bindings::IAudioSource) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+}
+impl Drop for AudioSource {
     fn drop(&mut self) {
-        if let Err(hr) = self.release() {
-            eprintln!("Failed to release IColorFrameSource: HRESULT = {:#X}", hr);
+        if !self.ptr.is_null() {
+            unsafe {
+                ((*(*self.ptr).lpVtbl).Release.unwrap())(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct BodyFrameSource {
+    ptr: *mut crate::bindings::IBodyFrameSource,
+}
+impl BodyFrameSource {
+    pub(crate) fn new(ptr: *mut crate::bindings::IBodyFrameSource) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+}
+impl Drop for BodyFrameSource {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                ((*(*self.ptr).lpVtbl).Release.unwrap())(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct BodyIndexFrameSource {
+    ptr: *mut crate::bindings::IBodyIndexFrameSource,
+}
+impl BodyIndexFrameSource {
+    pub(crate) fn new(ptr: *mut crate::bindings::IBodyIndexFrameSource) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+}
+impl Drop for BodyIndexFrameSource {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                ((*(*self.ptr).lpVtbl).Release.unwrap())(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct CoordinateMapper {
+    ptr: *mut crate::bindings::ICoordinateMapper,
+}
+impl CoordinateMapper {
+    pub(crate) fn new(ptr: *mut crate::bindings::ICoordinateMapper) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+}
+impl Drop for CoordinateMapper {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                ((*(*self.ptr).lpVtbl).Release.unwrap())(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct DepthFrameSource {
+    ptr: *mut crate::bindings::IDepthFrameSource,
+}
+impl DepthFrameSource {
+    pub(crate) fn new(ptr: *mut crate::bindings::IDepthFrameSource) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+}
+impl Drop for DepthFrameSource {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                ((*(*self.ptr).lpVtbl).Release.unwrap())(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct InfraredFrameSource {
+    ptr: *mut crate::bindings::IInfraredFrameSource,
+}
+impl InfraredFrameSource {
+    pub(crate) fn new(ptr: *mut crate::bindings::IInfraredFrameSource) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+}
+impl Drop for InfraredFrameSource {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                ((*(*self.ptr).lpVtbl).Release.unwrap())(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct IsAvailableChangedEventArgs {
+    pub(crate) ptr: *mut crate::bindings::IIsAvailableChangedEventArgs,
+}
+impl IsAvailableChangedEventArgs {
+    pub(crate) fn new(ptr: *mut crate::bindings::IIsAvailableChangedEventArgs) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+    // Add methods for IIsAvailableChangedEventArgs here, e.g., get_IsAvailable
+    pub fn get_is_available(&self) -> Result<bool, HRESULT> {
+        if self.ptr.is_null() {
+            return Err(E_POINTER);
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_IsAvailable.ok_or(E_FAIL)?;
+        let mut available: BOOLEAN = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut available) };
+        if hr == 0 { Ok(available != 0) } else { Err(hr) }
+    }
+}
+impl Drop for IsAvailableChangedEventArgs {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                ((*(*self.ptr).lpVtbl).Release.unwrap())(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct LongExposureInfraredFrameSource {
+    ptr: *mut crate::bindings::ILongExposureInfraredFrameSource,
+}
+impl LongExposureInfraredFrameSource {
+    pub(crate) fn new(ptr: *mut crate::bindings::ILongExposureInfraredFrameSource) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+}
+impl Drop for LongExposureInfraredFrameSource {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                ((*(*self.ptr).lpVtbl).Release.unwrap())(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct MultiSourceFrameReader {
+    ptr: *mut crate::bindings::IMultiSourceFrameReader,
+}
+impl MultiSourceFrameReader {
+    pub(crate) fn new(ptr: *mut crate::bindings::IMultiSourceFrameReader) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+}
+impl Drop for MultiSourceFrameReader {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                ((*(*self.ptr).lpVtbl).Release.unwrap())(self.ptr);
+            }
+            self.ptr = ptr::null_mut();
         }
     }
 }
