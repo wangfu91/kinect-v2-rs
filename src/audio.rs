@@ -1,6 +1,6 @@
 use crate::bindings::{
-    BOOLEAN, IAudioBeamFrameReader, IAudioBeamList, IFrameCapturedEventArgs, IKinectSensor,
-    KinectAudioCalibrationState, TIMESPAN, WAITABLE_HANDLE,
+    AudioBeamMode, BOOLEAN, IAudioBeam, IAudioBeamFrameReader, IAudioBeamList,
+    IFrameCapturedEventArgs, IKinectSensor, KinectAudioCalibrationState, TIMESPAN, WAITABLE_HANDLE,
 };
 use crate::bindings::{IAudioSource, UINT};
 use std::ptr;
@@ -10,6 +10,7 @@ use windows::core::Error;
 pub struct AudioSource {
     ptr: *mut IAudioSource,
 }
+
 impl AudioSource {
     pub(crate) fn new(ptr: *mut IAudioSource) -> Self {
         assert!(!ptr.is_null());
@@ -203,6 +204,216 @@ impl AudioSource {
 }
 
 impl Drop for AudioSource {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
+                    if let Some(release_fn) = vtbl.Release {
+                        release_fn(self.ptr);
+                    }
+                }
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct AudioBeam {
+    ptr: *mut IAudioBeam,
+}
+
+impl AudioBeam {
+    pub(crate) fn new(ptr: *mut IAudioBeam) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+
+    pub fn get_audio_source(&self) -> Result<AudioSource, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_source_fn = vtbl.get_AudioSource.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut audio_source_ptr: *mut IAudioSource = ptr::null_mut();
+        let hr = unsafe { get_source_fn(self.ptr, &mut audio_source_ptr) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            if audio_source_ptr.is_null() {
+                Err(Error::from(E_POINTER))
+            } else {
+                Ok(AudioSource::new(audio_source_ptr))
+            }
+        }
+    }
+
+    pub fn get_audio_beam_mode(&self) -> Result<AudioBeamMode, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_mode_fn = vtbl.get_AudioBeamMode.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut audio_beam_mode: AudioBeamMode = AudioBeamMode::AudioBeamMode_Automatic; // Default
+        let hr = unsafe { get_mode_fn(self.ptr, &mut audio_beam_mode) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(audio_beam_mode)
+        }
+    }
+
+    pub fn put_audio_beam_mode(&self, audio_beam_mode: AudioBeamMode) -> Result<(), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let put_mode_fn = vtbl.put_AudioBeamMode.ok_or_else(|| Error::from(E_FAIL))?;
+        let hr = unsafe { put_mode_fn(self.ptr, audio_beam_mode) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(())
+        }
+    }
+
+    pub fn get_beam_angle(&self) -> Result<f32, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_angle_fn = vtbl.get_BeamAngle.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut beam_angle: f32 = 0.0;
+        let hr = unsafe { get_angle_fn(self.ptr, &mut beam_angle) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(beam_angle)
+        }
+    }
+
+    pub fn put_beam_angle(&self, beam_angle: f32) -> Result<(), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let put_angle_fn = vtbl.put_BeamAngle.ok_or_else(|| Error::from(E_FAIL))?;
+        let hr = unsafe { put_angle_fn(self.ptr, beam_angle) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(())
+        }
+    }
+
+    pub fn get_beam_angle_confidence(&self) -> Result<f32, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_confidence_fn = vtbl
+            .get_BeamAngleConfidence
+            .ok_or_else(|| Error::from(E_FAIL))?;
+        let mut beam_angle_confidence: f32 = 0.0;
+        let hr = unsafe { get_confidence_fn(self.ptr, &mut beam_angle_confidence) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(beam_angle_confidence)
+        }
+    }
+
+    pub fn open_input_stream(&self) -> Result<*mut windows::Win32::System::Com::IStream, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let open_stream_fn = vtbl.OpenInputStream.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut stream: *mut windows::Win32::System::Com::IStream = ptr::null_mut();
+        let hr = unsafe { open_stream_fn(self.ptr, &mut stream) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(stream)
+        }
+    }
+
+    pub fn get_relative_time(&self) -> Result<TIMESPAN, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_time_fn = vtbl.get_RelativeTime.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut relative_time: TIMESPAN = 0;
+        let hr = unsafe { get_time_fn(self.ptr, &mut relative_time) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(relative_time)
+        }
+    }
+}
+
+impl Drop for AudioBeam {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
+                    if let Some(release_fn) = vtbl.Release {
+                        release_fn(self.ptr);
+                    }
+                }
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct AudioBeamList {
+    ptr: *mut IAudioBeamList,
+}
+
+impl AudioBeamList {
+    pub(crate) fn new(ptr: *mut IAudioBeamList) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+
+    pub fn get_beam_count(&self) -> Result<UINT, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_count_fn = vtbl.get_BeamCount.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut count: UINT = 0;
+        let hr = unsafe { get_count_fn(self.ptr, &mut count) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(count)
+        }
+    }
+
+    pub fn open_audio_beam(&self, index: UINT) -> Result<AudioBeam, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let open_beam_fn = vtbl.OpenAudioBeam.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut audio_beam_ptr: *mut IAudioBeam = ptr::null_mut();
+        let hr = unsafe { open_beam_fn(self.ptr, index, &mut audio_beam_ptr) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            if audio_beam_ptr.is_null() {
+                Err(Error::from(E_POINTER))
+            } else {
+                Ok(AudioBeam::new(audio_beam_ptr))
+            }
+        }
+    }
+}
+
+impl Drop for AudioBeamList {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
