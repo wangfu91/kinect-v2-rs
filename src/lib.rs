@@ -10,74 +10,21 @@ pub mod bindings {
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
 
-use windows_sys::{
-    Win32::Foundation::{BOOLEAN, E_FAIL, E_POINTER},
-    core::HRESULT,
-};
+pub mod color_frame;
+pub mod kinect_sensor;
 
 use crate::bindings::{GetDefaultKinectSensor, IKinectSensor};
 use std::ptr;
 
-// Add an impl block for IKinectSensor to provide a helper method for Open
-impl IKinectSensor {
-    pub fn open(&mut self) -> Result<(), HRESULT> {
-        let kinect_sensor_ptr = self as *mut Self;
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(open_fn) = vtbl.Open {
-                let hr = unsafe { open_fn(kinect_sensor_ptr) };
-                if hr == 0 {
-                    Ok(())
-                } else {
-                    eprintln!(
-                        "IKinectSensor::open: Failed to open Kinect sensor. HRESULT: {:#X}",
-                        hr
-                    );
-                    Err(hr)
-                }
-            } else {
-                eprintln!("IKinectSensor::open: Open method not found in VTable (is None).");
-                Err(E_FAIL)
-            }
-        } else {
-            eprintln!("IKinectSensor::open: VTable pointer (lpVtbl) is null.");
-            Err(E_POINTER)
-        }
-    }
-
-    pub fn is_available(&mut self) -> Result<bool, HRESULT> {
-        let kinect_sensor_ptr = self as *mut Self;
-        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
-            if let Some(get_is_available_fn) = vtbl.get_IsAvailable {
-                let mut is_available: BOOLEAN = 0;
-                let hr = unsafe { get_is_available_fn(kinect_sensor_ptr, &mut is_available) };
-                if hr == 0 {
-                    Ok(is_available != 0)
-                } else {
-                    Err(hr)
-                }
-            } else {
-                eprintln!("get_IsAvailable method not found in IKinectSensor VTable (is None).");
-                Err(E_FAIL)
-            }
-        } else {
-            eprintln!("IKinectSensor::get_IsAvailable: VTable pointer (lpVtbl) is null.");
-            Err(E_POINTER)
-        }
-    }
-}
-
-pub fn get_default_kinect_sensor() {
+pub fn demo() {
     let mut kinect_sensor_ptr: *mut IKinectSensor = ptr::null_mut();
 
     // Call the FFI function to get the default Kinect sensor
     let hr = unsafe { GetDefaultKinectSensor(&mut kinect_sensor_ptr as *mut *mut IKinectSensor) };
 
-    eprintln!("====== GetDefaultKinectSensor returned: HRESULT {:#X}", hr);
+    eprintln!("GetDefaultKinectSensor returned: HRESULT {:#X}", hr);
     if hr != 0 {
-        eprintln!(
-            "=== Failed to get default Kinect sensor. HRESULT: {:#X}",
-            hr
-        );
+        eprintln!("Failed to get default Kinect sensor. HRESULT: {:#X}", hr);
         return;
     }
 
@@ -87,18 +34,69 @@ pub fn get_default_kinect_sensor() {
     // It assumes kinect_sensor_ptr is valid, non-null, and properly aligned.
     let sensor_instance: &mut IKinectSensor = unsafe { &mut *kinect_sensor_ptr };
     if let Err(hr) = sensor_instance.open() {
-        eprintln!("=== Failed to open Kinect sensor. HRESULT: {:#X}", hr);
+        eprintln!("Failed to open Kinect sensor. HRESULT: {:#X}", hr);
         return;
     } else {
-        eprintln!("=== Successfully opened Kinect sensor.");
+        eprintln!("Successfully opened Kinect sensor.");
     }
 
     match sensor_instance.is_available() {
         Err(hr) => {
-            eprintln!("=== Kinect sensor is not available. HRESULT: {:#X}", hr);
+            eprintln!("Kinect sensor is not available. HRESULT: {:#X}", hr);
         }
         Ok(is_available) => {
-            eprintln!("=== Kinect sensor available: {:?}.", is_available);
+            eprintln!("Kinect sensor available: {:?}.", is_available);
+        }
+    }
+
+    match sensor_instance.unique_kinect_id() {
+        Err(hr) => {
+            eprintln!("Failed to get unique Kinect ID. HRESULT: {:#X}", hr);
+        }
+        Ok(unique_id) => {
+            eprintln!("Unique Kinect ID: {}", unique_id);
+        }
+    }
+
+    match sensor_instance.is_open() {
+        Err(hr) => {
+            eprintln!(
+                "Failed to check if Kinect sensor is open. HRESULT: {:#X}",
+                hr
+            );
+        }
+        Ok(is_open) => {
+            eprintln!("Kinect sensor is open: {:?}", is_open);
+        }
+    }
+
+    match sensor_instance.kinect_capabilities() {
+        Err(hr) => {
+            eprintln!("Failed to get Kinect capabilities. HRESULT: {:#X}", hr);
+        }
+        Ok(capabilities) => {
+            eprintln!("Kinect capabilities: {:#X}", capabilities);
+        }
+    }
+
+    match sensor_instance.audio_source() {
+        Err(hr) => {
+            eprintln!("Failed to get audio source. HRESULT: {:#X}", hr);
+        }
+        Ok(audio_source) => {
+            eprintln!("Audio source obtained successfully: {:?}", audio_source);
+        }
+    }
+
+    match sensor_instance.color_frame_source() {
+        Err(hr) => {
+            eprintln!("Failed to get color frame source. HRESULT: {:#X}", hr);
+        }
+        Ok(color_frame_source) => {
+            eprintln!(
+                "Color frame source obtained successfully: {:?}",
+                color_frame_source
+            );
         }
     }
 }
@@ -109,6 +107,6 @@ mod tests {
 
     #[test]
     fn it_works() {
-        get_default_kinect_sensor();
+        demo();
     }
 }
