@@ -407,6 +407,8 @@ impl IColorCameraSettings {
     }
 }
 
+unsafe impl Send for IColorFrameReader {}
+
 impl IColorFrameReader {
     pub fn subscribe_frame_arrived(
         &mut self,
