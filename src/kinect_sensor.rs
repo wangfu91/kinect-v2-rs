@@ -4,14 +4,23 @@ use windows_sys::{
 };
 
 use crate::bindings::{
-    DWORD, IAudioSource, IBodyFrameSource, IBodyIndexFrameSource, IColorFrameSource,
-    ICoordinateMapper, IDepthFrameSource, IInfraredFrameSource, IIsAvailableChangedEventArgs,
-    IKinectSensor, ILongExposureInfraredFrameSource, IMultiSourceFrameReader, UINT,
-    WAITABLE_HANDLE, WCHAR,
+    DWORD, GetDefaultKinectSensor, IAudioSource, IBodyFrameSource, IBodyIndexFrameSource,
+    IColorFrameSource, ICoordinateMapper, IDepthFrameSource, IInfraredFrameSource,
+    IIsAvailableChangedEventArgs, IKinectSensor, ILongExposureInfraredFrameSource,
+    IMultiSourceFrameReader, UINT, WAITABLE_HANDLE, WCHAR,
 };
-use std::ffi::OsString;
 use std::os::windows::ffi::OsStringExt;
-use std::ptr;
+use std::{ffi::OsString, ptr};
+
+pub fn get_default_kinect_sensor() -> Result<IKinectSensor, HRESULT> {
+    let mut kinect_sensor_ptr: *mut IKinectSensor = ptr::null_mut();
+    let hr = unsafe { GetDefaultKinectSensor(&mut kinect_sensor_ptr) };
+    if hr == 0 {
+        Ok(unsafe { ptr::read(kinect_sensor_ptr) })
+    } else {
+        Err(hr)
+    }
+}
 
 impl IKinectSensor {
     pub fn subscribe_is_available_changed(
@@ -51,7 +60,7 @@ impl IKinectSensor {
     pub fn get_is_available_changed_event_data(
         &mut self,
         waitable_handle: WAITABLE_HANDLE,
-    ) -> Result<*mut IIsAvailableChangedEventArgs, HRESULT> {
+    ) -> Result<IIsAvailableChangedEventArgs, HRESULT> {
         let kinect_sensor_ptr = self as *mut Self;
         if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
             if let Some(get_event_data_fn) = vtbl.GetIsAvailableChangedEventData {
@@ -59,7 +68,11 @@ impl IKinectSensor {
                 let hr = unsafe {
                     get_event_data_fn(kinect_sensor_ptr, waitable_handle, &mut event_data_ptr)
                 };
-                if hr == 0 { Ok(event_data_ptr) } else { Err(hr) }
+                if hr == 0 {
+                    Ok(unsafe { ptr::read(event_data_ptr) })
+                } else {
+                    Err(hr)
+                }
             } else {
                 Err(E_FAIL)
             }
@@ -134,14 +147,14 @@ impl IKinectSensor {
         }
     }
 
-    pub fn color_frame_source(&mut self) -> Result<*mut IColorFrameSource, HRESULT> {
+    pub fn color_frame_source(&mut self) -> Result<IColorFrameSource, HRESULT> {
         let kinect_sensor_ptr = self as *mut Self;
         if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
             if let Some(get_fn) = vtbl.get_ColorFrameSource {
                 let mut frame_source_ptr: *mut IColorFrameSource = ptr::null_mut();
                 let hr = unsafe { get_fn(kinect_sensor_ptr, &mut frame_source_ptr) };
                 if hr == 0 {
-                    Ok(frame_source_ptr)
+                    Ok(unsafe { ptr::read(frame_source_ptr) })
                 } else {
                     Err(hr)
                 }
@@ -153,14 +166,14 @@ impl IKinectSensor {
         }
     }
 
-    pub fn depth_frame_source(&mut self) -> Result<*mut IDepthFrameSource, HRESULT> {
+    pub fn depth_frame_source(&mut self) -> Result<IDepthFrameSource, HRESULT> {
         let kinect_sensor_ptr = self as *mut Self;
         if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
             if let Some(get_fn) = vtbl.get_DepthFrameSource {
                 let mut frame_source_ptr: *mut IDepthFrameSource = ptr::null_mut();
                 let hr = unsafe { get_fn(kinect_sensor_ptr, &mut frame_source_ptr) };
                 if hr == 0 {
-                    Ok(frame_source_ptr)
+                    Ok(unsafe { ptr::read(frame_source_ptr) })
                 } else {
                     Err(hr)
                 }
@@ -172,14 +185,14 @@ impl IKinectSensor {
         }
     }
 
-    pub fn body_frame_source(&mut self) -> Result<*mut IBodyFrameSource, HRESULT> {
+    pub fn body_frame_source(&mut self) -> Result<IBodyFrameSource, HRESULT> {
         let kinect_sensor_ptr = self as *mut Self;
         if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
             if let Some(get_fn) = vtbl.get_BodyFrameSource {
                 let mut frame_source_ptr: *mut IBodyFrameSource = ptr::null_mut();
                 let hr = unsafe { get_fn(kinect_sensor_ptr, &mut frame_source_ptr) };
                 if hr == 0 {
-                    Ok(frame_source_ptr)
+                    Ok(unsafe { ptr::read(frame_source_ptr) })
                 } else {
                     Err(hr)
                 }
@@ -191,14 +204,14 @@ impl IKinectSensor {
         }
     }
 
-    pub fn body_index_frame_source(&mut self) -> Result<*mut IBodyIndexFrameSource, HRESULT> {
+    pub fn body_index_frame_source(&mut self) -> Result<IBodyIndexFrameSource, HRESULT> {
         let kinect_sensor_ptr = self as *mut Self;
         if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
             if let Some(get_fn) = vtbl.get_BodyIndexFrameSource {
                 let mut frame_source_ptr: *mut IBodyIndexFrameSource = ptr::null_mut();
                 let hr = unsafe { get_fn(kinect_sensor_ptr, &mut frame_source_ptr) };
                 if hr == 0 {
-                    Ok(frame_source_ptr)
+                    Ok(unsafe { ptr::read(frame_source_ptr) })
                 } else {
                     Err(hr)
                 }
@@ -210,14 +223,14 @@ impl IKinectSensor {
         }
     }
 
-    pub fn infrared_frame_source(&mut self) -> Result<*mut IInfraredFrameSource, HRESULT> {
+    pub fn infrared_frame_source(&mut self) -> Result<IInfraredFrameSource, HRESULT> {
         let kinect_sensor_ptr = self as *mut Self;
         if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
             if let Some(get_fn) = vtbl.get_InfraredFrameSource {
                 let mut frame_source_ptr: *mut IInfraredFrameSource = ptr::null_mut();
                 let hr = unsafe { get_fn(kinect_sensor_ptr, &mut frame_source_ptr) };
                 if hr == 0 {
-                    Ok(frame_source_ptr)
+                    Ok(unsafe { ptr::read(frame_source_ptr) })
                 } else {
                     Err(hr)
                 }
@@ -231,14 +244,14 @@ impl IKinectSensor {
 
     pub fn long_exposure_infrared_frame_source(
         &mut self,
-    ) -> Result<*mut ILongExposureInfraredFrameSource, HRESULT> {
+    ) -> Result<ILongExposureInfraredFrameSource, HRESULT> {
         let kinect_sensor_ptr = self as *mut Self;
         if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
             if let Some(get_fn) = vtbl.get_LongExposureInfraredFrameSource {
                 let mut frame_source_ptr: *mut ILongExposureInfraredFrameSource = ptr::null_mut();
                 let hr = unsafe { get_fn(kinect_sensor_ptr, &mut frame_source_ptr) };
                 if hr == 0 {
-                    Ok(frame_source_ptr)
+                    Ok(unsafe { ptr::read(frame_source_ptr) })
                 } else {
                     Err(hr)
                 }
@@ -250,13 +263,17 @@ impl IKinectSensor {
         }
     }
 
-    pub fn audio_source(&mut self) -> Result<*mut IAudioSource, HRESULT> {
+    pub fn audio_source(&mut self) -> Result<IAudioSource, HRESULT> {
         let kinect_sensor_ptr = self as *mut Self;
         if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
             if let Some(get_fn) = vtbl.get_AudioSource {
                 let mut source_ptr: *mut IAudioSource = ptr::null_mut();
                 let hr = unsafe { get_fn(kinect_sensor_ptr, &mut source_ptr) };
-                if hr == 0 { Ok(source_ptr) } else { Err(hr) }
+                if hr == 0 {
+                    Ok(unsafe { ptr::read(source_ptr) })
+                } else {
+                    Err(hr)
+                }
             } else {
                 Err(E_FAIL)
             }
@@ -268,7 +285,7 @@ impl IKinectSensor {
     pub fn open_multi_source_frame_reader(
         &mut self,
         enabled_frame_source_types: DWORD,
-    ) -> Result<*mut IMultiSourceFrameReader, HRESULT> {
+    ) -> Result<IMultiSourceFrameReader, HRESULT> {
         let kinect_sensor_ptr = self as *mut Self;
         if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
             if let Some(open_fn) = vtbl.OpenMultiSourceFrameReader {
@@ -280,7 +297,11 @@ impl IKinectSensor {
                         &mut reader_ptr,
                     )
                 };
-                if hr == 0 { Ok(reader_ptr) } else { Err(hr) }
+                if hr == 0 {
+                    Ok(unsafe { ptr::read(reader_ptr) })
+                } else {
+                    Err(hr)
+                }
             } else {
                 Err(E_FAIL)
             }
@@ -289,13 +310,17 @@ impl IKinectSensor {
         }
     }
 
-    pub fn coordinate_mapper(&mut self) -> Result<*mut ICoordinateMapper, HRESULT> {
+    pub fn coordinate_mapper(&mut self) -> Result<ICoordinateMapper, HRESULT> {
         let kinect_sensor_ptr = self as *mut Self;
         if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
             if let Some(get_fn) = vtbl.get_CoordinateMapper {
                 let mut mapper_ptr: *mut ICoordinateMapper = ptr::null_mut();
                 let hr = unsafe { get_fn(kinect_sensor_ptr, &mut mapper_ptr) };
-                if hr == 0 { Ok(mapper_ptr) } else { Err(hr) }
+                if hr == 0 {
+                    Ok(unsafe { ptr::read(mapper_ptr) })
+                } else {
+                    Err(hr)
+                }
             } else {
                 Err(E_FAIL)
             }
