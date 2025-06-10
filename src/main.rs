@@ -22,14 +22,16 @@ pub fn main() {
 }
 
 fn color_frame_demo() -> anyhow::Result<()> {
-    let mut kinect_sensor =
+    let kinect_sensor =
         kinect_sensor::get_default_kinect_sensor().expect("Failed to get default Kinect sensor");
 
-    let mut color_frame_source = kinect_sensor
+    kinect_sensor.open().expect("Failed to open Kinect sensor");
+
+    let color_frame_source = kinect_sensor
         .color_frame_source()
         .expect("Failed to get color frame source");
 
-    let mut color_frame_reader = color_frame_source
+    let color_frame_reader = color_frame_source
         .open_reader()
         .expect("Failed to open color frame reader");
 
@@ -40,15 +42,15 @@ fn color_frame_demo() -> anyhow::Result<()> {
         .expect("Failed to subscribe to frame arrived event");
 
     loop {
-        let result = unsafe { WaitForSingleObject(waitable_handle as HANDLE, 66) };
+        let result = unsafe { WaitForSingleObject(waitable_handle as HANDLE, 100) };
         if WAIT_OBJECT_0 == result {
             match color_frame_reader.get_frame_arrived_event_data(waitable_handle) {
-                Ok(mut event_args) => {
-                    if let Ok(mut frame_reference) = event_args.get_frame_reference() {
-                        if let Ok(mut color_frame) = frame_reference.acquire_frame() {
-                            let mut frame_description = color_frame
+                Ok(event_args) => {
+                    if let Ok(frame_reference) = event_args.get_frame_reference() {
+                        if let Ok(color_frame) = frame_reference.acquire_frame() {
+                            let frame_description = color_frame
                                 .get_frame_description()
-                                .expect("Failed to get raw color image");
+                                .expect("Failed to get frame description");
 
                             let width = frame_description.get_width().expect("Failed to get width");
                             let height = frame_description
@@ -76,9 +78,7 @@ fn color_frame_demo() -> anyhow::Result<()> {
                 }
             }
         } else if WAIT_TIMEOUT == result {
-            // No new frame available, continue waiting
             eprintln!("No new color frame available, waiting...");
-            //std::thread::sleep(std::time::Duration::from_millis(40));
         } else {
             eprintln!("WaitForSingleObject failed with result: {:#X}", result);
             break;
