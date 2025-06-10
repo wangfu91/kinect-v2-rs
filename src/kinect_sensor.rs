@@ -4,21 +4,10 @@ use windows_sys::{
 };
 
 use crate::bindings::{
-    DWORD,
-    IAudioSource,
-    IBodyFrameSource,
-    IBodyIndexFrameSource,
-    IColorFrameSource,
-    ICoordinateMapper,
-    IDepthFrameSource,
-    IInfraredFrameSource,
-    IIsAvailableChangedEventArgs, // Added WAITABLE_HANDLE and IIsAvailableChangedEventArgs
-    IKinectSensor,
-    ILongExposureInfraredFrameSource,
-    IMultiSourceFrameReader,
-    UINT,
-    WAITABLE_HANDLE,
-    WCHAR,
+    DWORD, IAudioSource, IBodyFrameSource, IBodyIndexFrameSource, IColorFrameSource,
+    ICoordinateMapper, IDepthFrameSource, IInfraredFrameSource, IIsAvailableChangedEventArgs,
+    IKinectSensor, ILongExposureInfraredFrameSource, IMultiSourceFrameReader, UINT,
+    WAITABLE_HANDLE, WCHAR,
 };
 use std::ffi::OsString;
 use std::os::windows::ffi::OsStringExt;
