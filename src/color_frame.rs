@@ -1,7 +1,7 @@
 use crate::bindings::{
     ColorImageFormat, FrameCapturedStatus, FrameSourceTypes, IColorCameraSettings, IColorFrame,
     IColorFrameArrivedEventArgs, IColorFrameReader, IColorFrameReference, IColorFrameSource,
-    IFrameCapturedEventArgs, IFrameDescription, TIMESPAN, WAITABLE_HANDLE,
+    IFrameCapturedEventArgs, IFrameDescription, IKinectSensor, TIMESPAN, WAITABLE_HANDLE,
 };
 use std::ptr;
 use windows_sys::{
@@ -508,6 +508,134 @@ impl IColorFrameReader {
                 let mut source_ptr: *mut IColorFrameSource = ptr::null_mut();
                 let hr = unsafe { get_source_fn(self, &mut source_ptr) };
                 if hr == 0 { Ok(source_ptr) } else { Err(hr) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+}
+
+impl IColorFrameSource {
+    pub fn subscribe_frame_captured(
+        &mut self,
+        waitable_handle: &mut WAITABLE_HANDLE,
+    ) -> Result<(), HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(subscribe_fn) = vtbl.SubscribeFrameCaptured {
+                let hr = unsafe { subscribe_fn(self, waitable_handle) };
+                if hr == 0 { Ok(()) } else { Err(hr) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+
+    pub fn unsubscribe_frame_captured(
+        &mut self,
+        waitable_handle: WAITABLE_HANDLE,
+    ) -> Result<(), HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(unsubscribe_fn) = vtbl.UnsubscribeFrameCaptured {
+                let hr = unsafe { unsubscribe_fn(self, waitable_handle) };
+                if hr == 0 { Ok(()) } else { Err(hr) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+
+    pub fn get_frame_captured_event_data(
+        &mut self,
+        waitable_handle: WAITABLE_HANDLE,
+    ) -> Result<*mut IFrameCapturedEventArgs, HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(get_data_fn) = vtbl.GetFrameCapturedEventData {
+                let mut event_data_ptr: *mut IFrameCapturedEventArgs = ptr::null_mut();
+                let hr = unsafe { get_data_fn(self, waitable_handle, &mut event_data_ptr) };
+                if hr == 0 { Ok(event_data_ptr) } else { Err(hr) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+
+    pub fn get_is_active(&mut self) -> Result<bool, HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(get_is_active_fn) = vtbl.get_IsActive {
+                let mut is_active_val: BOOLEAN = 0;
+                let hr = unsafe { get_is_active_fn(self, &mut is_active_val) };
+                if hr == 0 {
+                    Ok(is_active_val != 0)
+                } else {
+                    Err(hr)
+                }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+
+    pub fn open_reader(&mut self) -> Result<*mut IColorFrameReader, HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(open_reader_fn) = vtbl.OpenReader {
+                let mut reader_ptr: *mut IColorFrameReader = ptr::null_mut();
+                let hr = unsafe { open_reader_fn(self, &mut reader_ptr) };
+                if hr == 0 { Ok(reader_ptr) } else { Err(hr) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+
+    pub fn create_frame_description(
+        &mut self,
+        format: ColorImageFormat,
+    ) -> Result<*mut IFrameDescription, HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(create_desc_fn) = vtbl.CreateFrameDescription {
+                let mut desc_ptr: *mut IFrameDescription = ptr::null_mut();
+                let hr = unsafe { create_desc_fn(self, format, &mut desc_ptr) };
+                if hr == 0 { Ok(desc_ptr) } else { Err(hr) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+
+    pub fn get_frame_description(&mut self) -> Result<*mut IFrameDescription, HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(get_desc_fn) = vtbl.get_FrameDescription {
+                let mut desc_ptr: *mut IFrameDescription = ptr::null_mut();
+                let hr = unsafe { get_desc_fn(self, &mut desc_ptr) };
+                if hr == 0 { Ok(desc_ptr) } else { Err(hr) }
+            } else {
+                Err(E_FAIL)
+            }
+        } else {
+            Err(E_POINTER)
+        }
+    }
+
+    pub fn get_kinect_sensor(&mut self) -> Result<*mut IKinectSensor, HRESULT> {
+        if let Some(vtbl) = unsafe { self.lpVtbl.as_mut() } {
+            if let Some(get_sensor_fn) = vtbl.get_KinectSensor {
+                let mut sensor_ptr: *mut IKinectSensor = ptr::null_mut();
+                let hr = unsafe { get_sensor_fn(self, &mut sensor_ptr) };
+                if hr == 0 { Ok(sensor_ptr) } else { Err(hr) }
             } else {
                 Err(E_FAIL)
             }

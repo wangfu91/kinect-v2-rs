@@ -7,6 +7,7 @@ edition = "2024"
 windows-sys = { version = "0.59.0", features = [
     "Win32_Foundation", 
     "Win32_System_Com",
+    "Win32_System_Com_Urlmon",
     "Win32_Graphics_Gdi",
     "Win32_UI_Input_Ime",
     "Win32_UI_WindowsAndMessaging" 
@@ -14,3 +15,6 @@ windows-sys = { version = "0.59.0", features = [
 
 [build-dependencies]
 bindgen = "0.72.0"
+
+[dev-dependencies]
+anyhow = "1.0.98"
