@@ -1,7 +1,10 @@
 use crate::bindings::{
-    ColorImageFormat, FrameCapturedStatus, FrameSourceTypes, IColorCameraSettings, IColorFrame,
-    IColorFrameArrivedEventArgs, IColorFrameReader, IColorFrameReference, IColorFrameSource,
-    IFrameCapturedEventArgs, IFrameDescription, TIMESPAN, WAITABLE_HANDLE,
+    ColorImageFormat, FrameCapturedStatus, FrameSourceTypes, IAudioSource, IBodyFrameSource,
+    IBodyIndexFrameSource, IColorCameraSettings, IColorFrame, IColorFrameArrivedEventArgs,
+    IColorFrameReader, IColorFrameReference, IColorFrameSource, ICoordinateMapper,
+    IDepthFrameSource, IFrameCapturedEventArgs, IFrameDescription, IInfraredFrameSource,
+    IIsAvailableChangedEventArgs, ILongExposureInfraredFrameSource, IMultiSourceFrameReader,
+    TIMESPAN, WAITABLE_HANDLE,
 };
 use std::ptr;
 use windows_sys::{
@@ -771,17 +774,11 @@ impl Drop for ColorFrameSource {
     }
 }
 
-// Define other wrapper structs (AudioSource, BodyFrameSource, etc.) here as needed.
-// For brevity, only the ones directly related to color_frame.rs are fully fleshed out.
-
-// Placeholder for other wrapper types from kinect_sensor.rs that are used here
-// These would be defined similarly in their respective modules or a shared module
-
 pub struct AudioSource {
-    ptr: *mut crate::bindings::IAudioSource,
+    ptr: *mut IAudioSource,
 }
 impl AudioSource {
-    pub(crate) fn new(ptr: *mut crate::bindings::IAudioSource) -> Self {
+    pub(crate) fn new(ptr: *mut IAudioSource) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
@@ -798,10 +795,10 @@ impl Drop for AudioSource {
 }
 
 pub struct BodyFrameSource {
-    ptr: *mut crate::bindings::IBodyFrameSource,
+    ptr: *mut IBodyFrameSource,
 }
 impl BodyFrameSource {
-    pub(crate) fn new(ptr: *mut crate::bindings::IBodyFrameSource) -> Self {
+    pub(crate) fn new(ptr: *mut IBodyFrameSource) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
@@ -818,10 +815,10 @@ impl Drop for BodyFrameSource {
 }
 
 pub struct BodyIndexFrameSource {
-    ptr: *mut crate::bindings::IBodyIndexFrameSource,
+    ptr: *mut IBodyIndexFrameSource,
 }
 impl BodyIndexFrameSource {
-    pub(crate) fn new(ptr: *mut crate::bindings::IBodyIndexFrameSource) -> Self {
+    pub(crate) fn new(ptr: *mut IBodyIndexFrameSource) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
@@ -838,10 +835,10 @@ impl Drop for BodyIndexFrameSource {
 }
 
 pub struct CoordinateMapper {
-    ptr: *mut crate::bindings::ICoordinateMapper,
+    ptr: *mut ICoordinateMapper,
 }
 impl CoordinateMapper {
-    pub(crate) fn new(ptr: *mut crate::bindings::ICoordinateMapper) -> Self {
+    pub(crate) fn new(ptr: *mut ICoordinateMapper) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
@@ -858,10 +855,10 @@ impl Drop for CoordinateMapper {
 }
 
 pub struct DepthFrameSource {
-    ptr: *mut crate::bindings::IDepthFrameSource,
+    ptr: *mut IDepthFrameSource,
 }
 impl DepthFrameSource {
-    pub(crate) fn new(ptr: *mut crate::bindings::IDepthFrameSource) -> Self {
+    pub(crate) fn new(ptr: *mut IDepthFrameSource) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
@@ -878,10 +875,10 @@ impl Drop for DepthFrameSource {
 }
 
 pub struct InfraredFrameSource {
-    ptr: *mut crate::bindings::IInfraredFrameSource,
+    ptr: *mut IInfraredFrameSource,
 }
 impl InfraredFrameSource {
-    pub(crate) fn new(ptr: *mut crate::bindings::IInfraredFrameSource) -> Self {
+    pub(crate) fn new(ptr: *mut IInfraredFrameSource) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
@@ -898,10 +895,10 @@ impl Drop for InfraredFrameSource {
 }
 
 pub struct IsAvailableChangedEventArgs {
-    pub(crate) ptr: *mut crate::bindings::IIsAvailableChangedEventArgs,
+    pub(crate) ptr: *mut IIsAvailableChangedEventArgs,
 }
 impl IsAvailableChangedEventArgs {
-    pub(crate) fn new(ptr: *mut crate::bindings::IIsAvailableChangedEventArgs) -> Self {
+    pub(crate) fn new(ptr: *mut IIsAvailableChangedEventArgs) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
@@ -929,10 +926,10 @@ impl Drop for IsAvailableChangedEventArgs {
 }
 
 pub struct LongExposureInfraredFrameSource {
-    ptr: *mut crate::bindings::ILongExposureInfraredFrameSource,
+    ptr: *mut ILongExposureInfraredFrameSource,
 }
 impl LongExposureInfraredFrameSource {
-    pub(crate) fn new(ptr: *mut crate::bindings::ILongExposureInfraredFrameSource) -> Self {
+    pub(crate) fn new(ptr: *mut ILongExposureInfraredFrameSource) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
@@ -949,10 +946,10 @@ impl Drop for LongExposureInfraredFrameSource {
 }
 
 pub struct MultiSourceFrameReader {
-    ptr: *mut crate::bindings::IMultiSourceFrameReader,
+    ptr: *mut IMultiSourceFrameReader,
 }
 impl MultiSourceFrameReader {
-    pub(crate) fn new(ptr: *mut crate::bindings::IMultiSourceFrameReader) -> Self {
+    pub(crate) fn new(ptr: *mut IMultiSourceFrameReader) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
