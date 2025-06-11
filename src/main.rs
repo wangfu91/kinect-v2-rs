@@ -1,6 +1,7 @@
 pub mod audio;
 pub mod bindings;
 pub mod body;
+pub mod body_index;
 pub mod color;
 pub mod coordinate;
 pub mod depth;

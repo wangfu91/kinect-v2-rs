@@ -4,7 +4,8 @@ use crate::bindings::{
     ILongExposureInfraredFrameReference, IMultiSourceFrame, IMultiSourceFrameArrivedEventArgs,
     IMultiSourceFrameReader, IMultiSourceFrameReference, ULONG, WAITABLE_HANDLE,
 };
-use crate::body::{BodyFrameReference, BodyIndexFrameReference};
+use crate::body::BodyFrameReference;
+use crate::body_index::BodyIndexFrameReference;
 use crate::depth::DepthFrameReference;
 use crate::kinect::KinectSensor;
 use crate::{

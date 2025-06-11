@@ -3,7 +3,8 @@ use crate::bindings::{
     self, BOOLEAN, GetDefaultKinectSensor, IIsAvailableChangedEventArgs, IKinectSensor, UINT,
     ULONG, WAITABLE_HANDLE, WCHAR,
 };
-use crate::body::{BodyFrameSource, BodyIndexFrameSource};
+use crate::body::BodyFrameSource;
+use crate::body_index::BodyIndexFrameSource;
 use crate::color::ColorFrameSource;
 use crate::coordinate::CoordinateMapper;
 use crate::depth::DepthFrameSource;
