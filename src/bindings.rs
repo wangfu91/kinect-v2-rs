@@ -34,7 +34,7 @@ unsafe extern "C" {
     pub static IID_INotifyPropertyChanged: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct INotifyPropertyChangedVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -112,7 +112,7 @@ unsafe extern "C" {
     pub static IID_IPropertyChangedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IPropertyChangedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -172,7 +172,7 @@ impl Default for IPropertyChangedEventArgs {
 }
 pub use self::_KinectCapabilities as KinectCapabilities;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _KinectCapabilities {
     KinectCapabilities_None = 0,
     KinectCapabilities_Vision = 1,
@@ -183,7 +183,7 @@ pub enum _KinectCapabilities {
 }
 pub use self::_FrameSourceTypes as FrameSourceTypes;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _FrameSourceTypes {
     FrameSourceTypes_None = 0,
     FrameSourceTypes_Color = 1,
@@ -196,7 +196,7 @@ pub enum _FrameSourceTypes {
 }
 pub use self::_ColorImageFormat as ColorImageFormat;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _ColorImageFormat {
     ColorImageFormat_None = 0,
     ColorImageFormat_Rgba = 1,
@@ -207,7 +207,7 @@ pub enum _ColorImageFormat {
 }
 pub use self::_HandState as HandState;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _HandState {
     HandState_Unknown = 0,
     HandState_NotTracked = 1,
@@ -217,7 +217,7 @@ pub enum _HandState {
 }
 pub use self::_Expression as Expression;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _Expression {
     Expression_Neutral = 0,
     Expression_Happy = 1,
@@ -225,7 +225,7 @@ pub enum _Expression {
 }
 pub use self::_DetectionResult as DetectionResult;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _DetectionResult {
     DetectionResult_Unknown = 0,
     DetectionResult_No = 1,
@@ -234,14 +234,14 @@ pub enum _DetectionResult {
 }
 pub use self::_TrackingConfidence as TrackingConfidence;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _TrackingConfidence {
     TrackingConfidence_Low = 0,
     TrackingConfidence_High = 1,
 }
 pub use self::_Activity as Activity;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _Activity {
     Activity_EyeLeftClosed = 0,
     Activity_EyeRightClosed = 1,
@@ -252,14 +252,14 @@ pub enum _Activity {
 }
 pub use self::_Appearance as Appearance;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _Appearance {
     Appearance_WearingGlasses = 0,
     Appearance_Count = 1,
 }
 pub use self::_JointType as JointType;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _JointType {
     JointType_SpineBase = 0,
     JointType_SpineMid = 1,
@@ -290,7 +290,7 @@ pub enum _JointType {
 }
 pub use self::_TrackingState as TrackingState;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _TrackingState {
     TrackingState_NotTracked = 0,
     TrackingState_Inferred = 1,
@@ -298,7 +298,7 @@ pub enum _TrackingState {
 }
 pub use self::_FrameEdges as FrameEdges;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _FrameEdges {
     FrameEdge_None = 0,
     FrameEdge_Right = 1,
@@ -308,7 +308,7 @@ pub enum _FrameEdges {
 }
 pub use self::_FrameCapturedStatus as FrameCapturedStatus;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _FrameCapturedStatus {
     FrameCapturedStatus_Unknown = 0,
     FrameCapturedStatus_Queued = 1,
@@ -316,21 +316,21 @@ pub enum _FrameCapturedStatus {
 }
 pub use self::_AudioBeamMode as AudioBeamMode;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _AudioBeamMode {
     AudioBeamMode_Automatic = 0,
     AudioBeamMode_Manual = 1,
 }
 pub use self::_KinectAudioCalibrationState as KinectAudioCalibrationState;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _KinectAudioCalibrationState {
     KinectAudioCalibrationState_Unknown = 0,
     KinectAudioCalibrationState_CalibrationRequired = 1,
     KinectAudioCalibrationState_Calibrated = 2,
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct _Vector4 {
     pub x: f32,
     pub y: f32,
@@ -348,7 +348,7 @@ const _: () = {
 };
 pub type Vector4 = _Vector4;
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct _PointF {
     pub X: f32,
     pub Y: f32,
@@ -362,7 +362,7 @@ const _: () = {
 };
 pub type PointF = _PointF;
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct _RectF {
     pub X: f32,
     pub Y: f32,
@@ -380,7 +380,7 @@ const _: () = {
 };
 pub type RectF = _RectF;
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct _ColorSpacePoint {
     pub X: f32,
     pub Y: f32,
@@ -394,7 +394,7 @@ const _: () = {
 };
 pub type ColorSpacePoint = _ColorSpacePoint;
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct _DepthSpacePoint {
     pub X: f32,
     pub Y: f32,
@@ -408,7 +408,7 @@ const _: () = {
 };
 pub type DepthSpacePoint = _DepthSpacePoint;
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct _CameraSpacePoint {
     pub X: f32,
     pub Y: f32,
@@ -476,7 +476,7 @@ impl Default for _JointOrientation {
 }
 pub type JointOrientation = _JointOrientation;
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct _CameraIntrinsics {
     pub FocalLengthX: f32,
     pub FocalLengthY: f32,
@@ -516,7 +516,7 @@ unsafe extern "C" {
     pub static IID_IKinectSensor: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectSensorVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -688,7 +688,7 @@ unsafe extern "C" {
     pub static IID_IIsAvailableChangedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IIsAvailableChangedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -751,7 +751,7 @@ unsafe extern "C" {
     pub static IID_IFrameDescription: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IFrameDescriptionVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -855,7 +855,7 @@ unsafe extern "C" {
     pub static IID_IFrameCapturedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IFrameCapturedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -931,7 +931,7 @@ unsafe extern "C" {
     pub static IID_IMultiSourceFrameReader: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IMultiSourceFrameReaderVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -1050,7 +1050,7 @@ unsafe extern "C" {
     pub static IID_IMultiSourceFrameArrivedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IMultiSourceFrameArrivedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -1115,7 +1115,7 @@ unsafe extern "C" {
     pub static IID_IMultiSourceFrameReference: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IMultiSourceFrameReferenceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -1176,7 +1176,7 @@ unsafe extern "C" {
     pub static IID_IMultiSourceFrame: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IMultiSourceFrameVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -1274,7 +1274,7 @@ unsafe extern "C" {
     pub static IID_IColorFrameReference: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IColorFrameReferenceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -1341,7 +1341,7 @@ unsafe extern "C" {
     pub static IID_IColorFrameArrivedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IColorFrameArrivedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -1404,7 +1404,7 @@ unsafe extern "C" {
     pub static IID_IColorFrameSource: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IColorFrameSourceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -1515,7 +1515,7 @@ unsafe extern "C" {
     pub static IID_IColorFrameReader: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IColorFrameReaderVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -1614,7 +1614,7 @@ unsafe extern "C" {
     pub static IID_IColorFrame: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IColorFrameVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -1734,7 +1734,7 @@ unsafe extern "C" {
     pub static IID_IDepthFrameReference: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IDepthFrameReferenceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -1801,7 +1801,7 @@ unsafe extern "C" {
     pub static IID_IDepthFrameArrivedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IDepthFrameArrivedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -1864,7 +1864,7 @@ unsafe extern "C" {
     pub static IID_IDepthFrameSource: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IDepthFrameSourceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -1982,7 +1982,7 @@ unsafe extern "C" {
     pub static IID_IDepthFrameReader: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IDepthFrameReaderVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -2081,7 +2081,7 @@ unsafe extern "C" {
     pub static IID_IDepthFrame: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IDepthFrameVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -2182,7 +2182,7 @@ unsafe extern "C" {
     pub static IID_IBodyFrameReference: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IBodyFrameReferenceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -2248,7 +2248,7 @@ unsafe extern "C" {
     pub static IID_IBodyFrameArrivedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IBodyFrameArrivedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -2309,7 +2309,7 @@ unsafe extern "C" {
     pub static IID_IBodyFrameSource: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IBodyFrameSourceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -2421,7 +2421,7 @@ unsafe extern "C" {
     pub static IID_IBodyFrameReader: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IBodyFrameReaderVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -2519,7 +2519,7 @@ unsafe extern "C" {
     pub static IID_IBodyFrame: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IBodyFrameVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -2592,7 +2592,7 @@ unsafe extern "C" {
     pub static IID_IBody: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IBodyVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -2732,7 +2732,7 @@ unsafe extern "C" {
     pub static IID_IBodyIndexFrameReference: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IBodyIndexFrameReferenceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -2801,7 +2801,7 @@ unsafe extern "C" {
     pub static IID_IBodyIndexFrameArrivedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IBodyIndexFrameArrivedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -2864,7 +2864,7 @@ unsafe extern "C" {
     pub static IID_IBodyIndexFrameSource: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IBodyIndexFrameSourceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -2970,7 +2970,7 @@ unsafe extern "C" {
     pub static IID_IBodyIndexFrameReader: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IBodyIndexFrameReaderVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -3073,7 +3073,7 @@ unsafe extern "C" {
     pub static IID_IBodyIndexFrame: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IBodyIndexFrameVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -3159,7 +3159,7 @@ unsafe extern "C" {
     pub static IID_IInfraredFrameReference: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IInfraredFrameReferenceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -3227,7 +3227,7 @@ unsafe extern "C" {
     pub static IID_IInfraredFrameArrivedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IInfraredFrameArrivedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -3290,7 +3290,7 @@ unsafe extern "C" {
     pub static IID_IInfraredFrameSource: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IInfraredFrameSourceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -3395,7 +3395,7 @@ unsafe extern "C" {
     pub static IID_IInfraredFrameReader: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IInfraredFrameReaderVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -3497,7 +3497,7 @@ unsafe extern "C" {
     pub static IID_IInfraredFrame: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IInfraredFrameVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -3583,7 +3583,7 @@ unsafe extern "C" {
     pub static IID_ILongExposureInfraredFrameReference: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct ILongExposureInfraredFrameReferenceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -3656,7 +3656,7 @@ unsafe extern "C" {
     pub static IID_ILongExposureInfraredFrameArrivedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct ILongExposureInfraredFrameArrivedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -3724,7 +3724,7 @@ unsafe extern "C" {
     pub static IID_ILongExposureInfraredFrameSource: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct ILongExposureInfraredFrameSourceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -3846,7 +3846,7 @@ unsafe extern "C" {
     pub static IID_ILongExposureInfraredFrameReader: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct ILongExposureInfraredFrameReaderVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -3970,7 +3970,7 @@ unsafe extern "C" {
     pub static IID_ILongExposureInfraredFrame: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct ILongExposureInfraredFrameVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -4068,7 +4068,7 @@ unsafe extern "C" {
     pub static IID_IAudioBeam: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IAudioBeamVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -4154,7 +4154,7 @@ unsafe extern "C" {
     pub static IID_IAudioBeamList: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IAudioBeamListVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -4215,7 +4215,7 @@ unsafe extern "C" {
     pub static IID_IAudioBeamFrameList: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IAudioBeamFrameListVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -4279,7 +4279,7 @@ unsafe extern "C" {
     pub static IID_IAudioBeamFrame: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IAudioBeamFrameVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -4366,7 +4366,7 @@ unsafe extern "C" {
     pub static IID_IAudioBeamSubFrame: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IAudioBeamSubFrameVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -4483,7 +4483,7 @@ unsafe extern "C" {
     pub static IID_IAudioBeamFrameReference: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IAudioBeamFrameReferenceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -4552,7 +4552,7 @@ unsafe extern "C" {
     pub static IID_IAudioBodyCorrelation: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IAudioBodyCorrelationVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -4609,7 +4609,7 @@ unsafe extern "C" {
     pub static IID_IAudioBeamFrameArrivedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IAudioBeamFrameArrivedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -4672,7 +4672,7 @@ unsafe extern "C" {
     pub static IID_IAudioBeamFrameReader: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IAudioBeamFrameReaderVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -4775,7 +4775,7 @@ unsafe extern "C" {
     pub static IID_IAudioSource: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IAudioSourceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -4893,7 +4893,7 @@ unsafe extern "C" {
     pub static IID_ICoordinateMapper: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct ICoordinateMapperVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -5119,7 +5119,7 @@ unsafe extern "C" {
     pub static IID_ICoordinateMappingChangedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct ICoordinateMappingChangedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -5174,7 +5174,7 @@ unsafe extern "C" {
     pub static IID_IColorCameraSettings: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IColorCameraSettingsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -5252,7 +5252,7 @@ unsafe extern "C" {
 }
 pub use self::_PointerDeviceType as PointerDeviceType;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _PointerDeviceType {
     PointerDeviceType_Touch = 0,
     PointerDeviceType_Pen = 1,
@@ -5261,7 +5261,7 @@ pub enum _PointerDeviceType {
 }
 pub use self::_HandType as HandType;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _HandType {
     HandType_NONE = 0,
     HandType_LEFT = 1,
@@ -5269,7 +5269,7 @@ pub enum _HandType {
 }
 pub use self::_KinectHoldingState as KinectHoldingState;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _KinectHoldingState {
     KinectHoldingState_Started = 0,
     KinectHoldingState_Completed = 1,
@@ -5277,7 +5277,7 @@ pub enum _KinectHoldingState {
 }
 pub use self::_KinectGestureSettings as KinectGestureSettings;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _KinectGestureSettings {
     KinectGestureSettings_None = 0,
     KinectGestureSettings_Tap = 1,
@@ -5291,7 +5291,7 @@ pub enum _KinectGestureSettings {
 }
 pub use self::_KinectInteractionMode as KinectInteractionMode;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _KinectInteractionMode {
     KinectInteractionMode_Normal = 0,
     KinectInteractionMode_Off = 1,
@@ -5299,7 +5299,7 @@ pub enum _KinectInteractionMode {
 }
 pub use self::_KinectEngagementMode as KinectEngagementMode;
 #[repr(i32)]
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _KinectEngagementMode {
     KinectEngagementMode_None = 0,
     KinectEngagementMode_SystemOnePerson = 1,
@@ -5308,7 +5308,7 @@ pub enum _KinectEngagementMode {
     KinectEngagementMode_ManualTwoPerson = 4,
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct _KinectManipulationDelta {
     pub Translation: PointF,
     pub Scale: f32,
@@ -5332,7 +5332,7 @@ const _: () = {
 };
 pub type KinectManipulationDelta = _KinectManipulationDelta;
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct _KinectManipulationVelocities {
     pub Linear: PointF,
     pub Angular: f32,
@@ -5362,7 +5362,7 @@ unsafe extern "C" {
     pub static IID_IBodyHandPair: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IBodyHandPairVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -5429,7 +5429,7 @@ unsafe extern "C" {
     pub static IID_IKinectCoreWindow: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectCoreWindowVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -5552,7 +5552,7 @@ unsafe extern "C" {
     pub static IID_IKinectGestureRecognizer: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectGestureRecognizerVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -5875,7 +5875,7 @@ unsafe extern "C" {
     pub static IID_IKinectGestureRecognizerSelectionHandler: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectGestureRecognizerSelectionHandlerVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -5981,7 +5981,7 @@ unsafe extern "C" {
     pub static IID_IKinectGestureRecognizerManipulationHandler: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectGestureRecognizerManipulationHandlerVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -6086,7 +6086,7 @@ unsafe extern "C" {
     pub static IID_IKinectHoldingEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectHoldingEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -6159,7 +6159,7 @@ unsafe extern "C" {
     pub static IID_IKinectManipulationCompletedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectManipulationCompletedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -6255,7 +6255,7 @@ unsafe extern "C" {
     pub static IID_IKinectManipulationInertiaStartingEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectManipulationInertiaStartingEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -6368,7 +6368,7 @@ unsafe extern "C" {
     pub static IID_IKinectManipulationStartedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectManipulationStartedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -6450,7 +6450,7 @@ unsafe extern "C" {
     pub static IID_IKinectManipulationUpdatedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectManipulationUpdatedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -6548,7 +6548,7 @@ unsafe extern "C" {
     pub static IID_IKinectPointerDevice: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectPointerDeviceVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -6607,7 +6607,7 @@ unsafe extern "C" {
     pub static IID_IKinectPointerEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectPointerEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -6677,7 +6677,7 @@ unsafe extern "C" {
     pub static IID_IKinectPointerPoint: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectPointerPointVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -6763,7 +6763,7 @@ unsafe extern "C" {
     pub static IID_IKinectPointerPointProperties: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectPointerPointPropertiesVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -6900,7 +6900,7 @@ unsafe extern "C" {
     pub static IID_IKinectPressingCompletedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectPressingCompletedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -6963,7 +6963,7 @@ unsafe extern "C" {
     pub static IID_IKinectPressingStartedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectPressingStartedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -7026,7 +7026,7 @@ unsafe extern "C" {
     pub static IID_IKinectPressingUpdatedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectPressingUpdatedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -7105,7 +7105,7 @@ unsafe extern "C" {
     pub static IID_IKinectTappedEventArgs: IID;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct IKinectTappedEventArgsVtbl {
     pub QueryInterface: ::std::option::Option<
         unsafe extern "C" fn(
@@ -7230,22 +7230,22 @@ unsafe extern "C" {
     pub static mut __MIDL_itf_Kinect2ECOM_0000_0070_v0_0_s_ifspec: RPC_IF_HANDLE;
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct __crt_locale_data {
     pub _address: u8,
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct __crt_multibyte_data {
     pub _address: u8,
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct _ACTIVATION_CONTEXT {
     pub _address: u8,
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct NET_ADDRESS_INFO_ {
     pub _address: u8,
 }

@@ -3,7 +3,8 @@ use crate::bindings::{
     IDepthFrameSource, IFrameCapturedEventArgs, IFrameDescription, IKinectSensor, TIMESPAN, UINT,
     UINT16, WAITABLE_HANDLE,
 };
-use crate::frame::FrameCapturedEventArgs;
+use crate::frame::{FrameCapturedEventArgs, FrameDescription};
+use crate::kinect::KinectSensor;
 use std::ptr;
 use windows::{
     Win32::Foundation::{E_FAIL, E_POINTER},
@@ -130,22 +131,22 @@ impl DepthFrameSource {
         }
     }
 
-    pub fn get_frame_description(&self) -> Result<*mut IFrameDescription, Error> {
+    pub fn get_frame_description(&self) -> Result<FrameDescription, Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_FrameDescription.ok_or(E_FAIL)?;
-        let mut frame_description: *mut IFrameDescription = ptr::null_mut();
-        let hr = unsafe { get_fn(self.ptr, &mut frame_description) };
+        let mut frame_description_ptr: *mut IFrameDescription = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, &mut frame_description_ptr) };
         if hr.is_ok() {
-            Ok(frame_description)
+            Ok(FrameDescription::new(frame_description_ptr))
         } else {
             Err(Error::from_hresult(hr))
         }
     }
 
-    pub fn get_kinect_sensor(&self) -> Result<*mut IKinectSensor, Error> {
+    pub fn get_kinect_sensor(&self) -> Result<KinectSensor, Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
@@ -154,7 +155,7 @@ impl DepthFrameSource {
         let mut sensor_ptr: *mut IKinectSensor = ptr::null_mut();
         let hr = unsafe { get_fn(self.ptr, &mut sensor_ptr) };
         if hr.is_ok() {
-            Ok(sensor_ptr)
+            Ok(KinectSensor::new(sensor_ptr))
         } else {
             Err(Error::from_hresult(hr))
         }
@@ -450,16 +451,16 @@ impl DepthFrame {
         }
     }
 
-    pub fn get_frame_description(&self) -> Result<*mut IFrameDescription, Error> {
+    pub fn get_frame_description(&self) -> Result<FrameDescription, Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_FrameDescription.ok_or(E_FAIL)?;
-        let mut frame_description: *mut IFrameDescription = ptr::null_mut();
-        let hr = unsafe { get_fn(self.ptr, &mut frame_description) };
+        let mut frame_description_ptr: *mut IFrameDescription = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, &mut frame_description_ptr) };
         if hr.is_ok() {
-            Ok(frame_description)
+            Ok(FrameDescription::new(frame_description_ptr))
         } else {
             Err(Error::from_hresult(hr))
         }
@@ -538,5 +539,73 @@ impl Drop for DepthFrame {
             }
             self.ptr = ptr::null_mut();
         }
+    }
+}
+
+// tests
+#[cfg(test)]
+mod tests {
+    use crate::{FRAME_WAIT_TIMEOUT_MS, kinect};
+    use anyhow::Context;
+    use windows::Win32::{
+        Foundation::{WAIT_OBJECT_0, WAIT_TIMEOUT},
+        System::Threading::WaitForSingleObject,
+    };
+
+    #[test]
+    fn subscribe_depth_frame_arrived_event() -> anyhow::Result<()> {
+        let kinect_sensor = kinect::get_default_kinect_sensor()?;
+        kinect_sensor.open()?;
+
+        let depth_frame_source = kinect_sensor
+            .depth_frame_source()
+            .context("Failed to get depth frame source")?;
+
+        let reader = depth_frame_source.open_reader()?;
+        let waitable_handle = reader.subscribe_frame_arrived()?;
+        let mut frame_count = 0;
+
+        let is_active = depth_frame_source.get_is_active()?;
+        assert!(is_active, "Depth frame source should be active");
+
+        loop {
+            let result = unsafe { WaitForSingleObject(waitable_handle, FRAME_WAIT_TIMEOUT_MS) };
+            if result == WAIT_OBJECT_0 {
+                let event_args = reader.get_frame_arrived_event_data(waitable_handle)?;
+                let frame_reference = event_args.get_frame_reference()?;
+                let depth_frame = frame_reference.acquire_frame()?;
+                let frame_description = depth_frame.get_frame_description()?;
+                let width = frame_description.get_width()? as u32;
+                let height = frame_description.get_height()? as u32;
+                let rel_time = frame_reference.get_relative_time()?;
+                let bytes_per_pixel = frame_description.get_bytes_per_pixel()?;
+
+                assert_eq!(width, 512);
+                assert_eq!(height, 424);
+                assert!(rel_time > 0);
+                assert_eq!(bytes_per_pixel, 2);
+
+                // The capacity for CopyFrameDataToArray is the number of UINT16 elements.
+                // A depth frame consists of width * height pixels, where each pixel is a UINT16.
+                let capacity = width * height;
+                let mut frame_data: Vec<u16> = vec![0; capacity as usize];
+                depth_frame
+                    .copy_frame_data_to_array(capacity, frame_data.as_mut_ptr())
+                    .context("Failed to copy depth frame data to array")?;
+                println!("depth frame data len: {:?}", frame_data.len());
+
+                frame_count += 1;
+                if frame_count > 10 {
+                    break; // Exit after getting 10 frames
+                }
+            } else if result == WAIT_TIMEOUT {
+                println!("No new depth frame arrived within the timeout period");
+            } else {
+                eprintln!("Error waiting for depth frame: {:?}", result);
+                break;
+            }
+        }
+
+        Ok(())
     }
 }

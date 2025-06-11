@@ -3,6 +3,8 @@ use crate::bindings::{
     IInfraredFrameArrivedEventArgs, IInfraredFrameReader, IInfraredFrameReference,
     IInfraredFrameSource, IKinectSensor, TIMESPAN, UINT, UINT16, WAITABLE_HANDLE,
 };
+use crate::frame::{FrameCapturedEventArgs, FrameDescription};
+use crate::kinect::KinectSensor;
 use std::ptr;
 use windows::Win32::Foundation::{E_FAIL, E_POINTER};
 use windows::core::Error;
@@ -55,7 +57,7 @@ impl InfraredFrame {
         }
     }
 
-    pub fn get_frame_description(&self) -> Result<*mut IFrameDescription, Error> {
+    pub fn get_frame_description(&self) -> Result<FrameDescription, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -63,12 +65,12 @@ impl InfraredFrame {
         let get_description_fn = vtbl
             .get_FrameDescription
             .ok_or_else(|| Error::from(E_FAIL))?;
-        let mut frame_description: *mut IFrameDescription = ptr::null_mut();
-        let hr = unsafe { get_description_fn(self.ptr, &mut frame_description) };
+        let mut frame_description_ptr: *mut IFrameDescription = ptr::null_mut();
+        let hr = unsafe { get_description_fn(self.ptr, &mut frame_description_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
-            Ok(frame_description)
+            Ok(FrameDescription::new(frame_description_ptr))
         }
     }
 
@@ -172,7 +174,7 @@ impl InfraredFrameSource {
     pub fn get_frame_captured_event_data(
         &self,
         waitable_handle: WAITABLE_HANDLE,
-    ) -> Result<*mut IFrameCapturedEventArgs, Error> {
+    ) -> Result<FrameCapturedEventArgs, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -180,12 +182,12 @@ impl InfraredFrameSource {
         let get_data_fn = vtbl
             .GetFrameCapturedEventData
             .ok_or_else(|| Error::from(E_FAIL))?;
-        let mut event_data: *mut IFrameCapturedEventArgs = ptr::null_mut();
-        let hr = unsafe { get_data_fn(self.ptr, waitable_handle, &mut event_data) };
+        let mut event_args_ptr: *mut IFrameCapturedEventArgs = ptr::null_mut();
+        let hr = unsafe { get_data_fn(self.ptr, waitable_handle, &mut event_args_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
-            Ok(event_data)
+            Ok(FrameCapturedEventArgs::new(event_args_ptr))
         }
     }
 
@@ -223,7 +225,7 @@ impl InfraredFrameSource {
         }
     }
 
-    pub fn get_frame_description(&self) -> Result<*mut IFrameDescription, Error> {
+    pub fn get_frame_description(&self) -> Result<FrameDescription, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -231,16 +233,16 @@ impl InfraredFrameSource {
         let get_description_fn = vtbl
             .get_FrameDescription
             .ok_or_else(|| Error::from(E_FAIL))?;
-        let mut frame_description: *mut IFrameDescription = ptr::null_mut();
-        let hr = unsafe { get_description_fn(self.ptr, &mut frame_description) };
+        let mut frame_description_ptr: *mut IFrameDescription = ptr::null_mut();
+        let hr = unsafe { get_description_fn(self.ptr, &mut frame_description_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
-            Ok(frame_description)
+            Ok(FrameDescription::new(frame_description_ptr))
         }
     }
 
-    pub fn get_kinect_sensor(&self) -> Result<*mut IKinectSensor, Error> {
+    pub fn get_kinect_sensor(&self) -> Result<KinectSensor, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -251,7 +253,7 @@ impl InfraredFrameSource {
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
-            Ok(sensor)
+            Ok(KinectSensor::new(sensor))
         }
     }
 }

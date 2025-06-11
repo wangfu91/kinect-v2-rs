@@ -5,8 +5,11 @@ use crate::bindings::{
     KinectAudioCalibrationState, TIMESPAN, UINT64, WAITABLE_HANDLE,
 };
 use crate::bindings::{IAudioSource, UINT};
+use crate::frame::FrameCapturedEventArgs;
+use crate::kinect::KinectSensor;
 use std::ptr;
 use windows::Win32::Foundation::{E_FAIL, E_POINTER, HANDLE};
+use windows::Win32::System::Com::IStream;
 use windows::core::Error;
 
 pub struct AudioSource {
@@ -58,7 +61,7 @@ impl AudioSource {
     pub fn get_frame_captured_event_data(
         &self,
         waitable_handle: WAITABLE_HANDLE,
-    ) -> Result<*mut IFrameCapturedEventArgs, Error> {
+    ) -> Result<FrameCapturedEventArgs, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -66,16 +69,16 @@ impl AudioSource {
         let get_data_fn = vtbl
             .GetFrameCapturedEventData
             .ok_or_else(|| Error::from(E_FAIL))?;
-        let mut event_data: *mut IFrameCapturedEventArgs = ptr::null_mut();
-        let hr = unsafe { get_data_fn(self.ptr, waitable_handle, &mut event_data) };
+        let mut event_args_ptr: *mut IFrameCapturedEventArgs = ptr::null_mut();
+        let hr = unsafe { get_data_fn(self.ptr, waitable_handle, &mut event_args_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
-            Ok(event_data)
+            Ok(FrameCapturedEventArgs::new(event_args_ptr))
         }
     }
 
-    pub fn get_kinect_sensor(&self) -> Result<*mut IKinectSensor, Error> {
+    pub fn get_kinect_sensor(&self) -> Result<KinectSensor, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -86,7 +89,7 @@ impl AudioSource {
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
-            Ok(sensor)
+            Ok(KinectSensor::new(sensor))
         }
     }
 
@@ -156,7 +159,7 @@ impl AudioSource {
         }
     }
 
-    pub fn open_reader(&self) -> Result<*mut IAudioBeamFrameReader, Error> {
+    pub fn open_reader(&self) -> Result<AudioBeamFrameReader, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -167,11 +170,11 @@ impl AudioSource {
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
-            Ok(reader)
+            Ok(AudioBeamFrameReader::new(reader))
         }
     }
 
-    pub fn get_audio_beams(&self) -> Result<*mut IAudioBeamList, Error> {
+    pub fn get_audio_beams(&self) -> Result<AudioBeamList, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -182,7 +185,7 @@ impl AudioSource {
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
-            Ok(audio_beam_list)
+            Ok(AudioBeamList::new(audio_beam_list))
         }
     }
 
@@ -324,13 +327,13 @@ impl AudioBeam {
         }
     }
 
-    pub fn open_input_stream(&self) -> Result<*mut windows::Win32::System::Com::IStream, Error> {
+    pub fn open_input_stream(&self) -> Result<*mut IStream, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
         let open_stream_fn = vtbl.OpenInputStream.ok_or_else(|| Error::from(E_FAIL))?;
-        let mut stream: *mut windows::Win32::System::Com::IStream = ptr::null_mut();
+        let mut stream: *mut IStream = ptr::null_mut();
         let hr = unsafe { open_stream_fn(self.ptr, &mut stream) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
@@ -727,10 +730,7 @@ impl AudioBeamSubFrame {
         }
     }
 
-    pub fn get_audio_body_correlation(
-        &self,
-        index: UINT,
-    ) -> Result<*mut IAudioBodyCorrelation, Error> {
+    pub fn get_audio_body_correlation(&self, index: UINT) -> Result<AudioBodyCorrelation, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -743,7 +743,7 @@ impl AudioBeamSubFrame {
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
-            Ok(audio_body_correlation)
+            Ok(AudioBodyCorrelation::new(audio_body_correlation))
         }
     }
 

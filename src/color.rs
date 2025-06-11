@@ -10,6 +10,7 @@ use crate::{
         IFrameDescription, TIMESPAN, WAITABLE_HANDLE,
     },
     frame::{FrameCapturedEventArgs, FrameDescription},
+    kinect::KinectSensor,
 };
 use std::ptr;
 
@@ -647,8 +648,20 @@ impl ColorFrameSource {
         }
     }
 
-    // Not including get_kinect_sensor to avoid circular dependencies with KinectSensor wrapper
-    // If needed, it should return Result<*mut IKinectSensor, Error> or a weak reference.
+    pub fn get_kinect_sensor(&self) -> Result<KinectSensor, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_KinectSensor.ok_or(E_FAIL)?;
+        let mut sensor_ptr: *mut crate::bindings::IKinectSensor = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, &mut sensor_ptr) };
+        if hr.is_ok() {
+            Ok(KinectSensor::new(sensor_ptr))
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
 }
 
 impl Drop for ColorFrameSource {
@@ -720,7 +733,7 @@ mod tests {
     }
 
     #[test]
-    fn subscribe_frame_arrived_event() -> anyhow::Result<()> {
+    fn subscribe_color_frame_arrived_event() -> anyhow::Result<()> {
         let kinect = kinect::get_default_kinect_sensor()?;
         kinect.open()?;
         let color_frame_source = kinect.color_frame_source()?;
@@ -728,6 +741,8 @@ mod tests {
         let mut waitable_handle: WAITABLE_HANDLE = WAITABLE_HANDLE::default();
         color_frame_reader.subscribe_frame_arrived(&mut waitable_handle)?;
         let mut frame_count = 0;
+        let is_active = color_frame_source.get_is_active()?;
+        assert!(is_active, "Color frame source should be active");
         loop {
             let result = unsafe { WaitForSingleObject(waitable_handle, FRAME_WAIT_TIMEOUT_MS) };
             if WAIT_OBJECT_0 == result {
@@ -738,20 +753,31 @@ mod tests {
                 let frame_reference = event_args.get_frame_reference()?;
                 let color_frame = frame_reference.acquire_frame()?;
                 let frame_description = color_frame.get_frame_description()?;
-                let width = frame_description.get_width()?;
-                let height = frame_description.get_height()?;
+                let width = frame_description.get_width()? as u32;
+                let height = frame_description.get_height()? as u32;
                 let rel_time = frame_reference.get_relative_time()?;
+                let bytes_per_pixel = frame_description.get_bytes_per_pixel()?;
 
                 assert_eq!(width, 1920);
                 assert_eq!(height, 1080);
                 assert!(rel_time > 0);
+                assert_eq!(bytes_per_pixel, 2);
+
+                let image_format = color_frame.get_raw_color_image_format()?;
+                println!("Color image format: {:?}", image_format);
+                let capacity = width * height * bytes_per_pixel;
+                let mut frame_data: Vec<u8> = vec![0; capacity as usize];
+                color_frame
+                    .copy_raw_frame_data_to_array(capacity, frame_data.as_mut_ptr())
+                    .context("Failed to copy raw frame data to array")?;
+                println!("frame_data.len: {:?}", frame_data.len());
 
                 frame_count += 1;
                 if frame_count > 10 {
                     break; // Exit after getting 10 frames
                 }
             } else if WAIT_TIMEOUT == result {
-                eprintln!("No new color frame available, waiting...");
+                println!("No new color frame available, waiting...");
             } else {
                 return Err(anyhow::anyhow!(
                     "WaitForSingleObject failed with result: {:?}",
