@@ -1,12 +1,375 @@
 use crate::bindings::{
-    BOOLEAN, IBodyFrame, IBodyFrameReader, IBodyFrameReference, IBodyFrameSource,
-    IFrameCapturedEventArgs, IKinectSensor, INT32, TIMESPAN, WAITABLE_HANDLE,
+    BOOLEAN, DetectionResult, HandState, IBody, IBodyFrame, IBodyFrameReader, IBodyFrameReference,
+    IBodyFrameSource, IBodyHandPair, IFrameCapturedEventArgs, IKinectSensor, INT32, Joint,
+    JointOrientation, TIMESPAN, TrackingConfidence, UINT, ULONG, WAITABLE_HANDLE,
 };
 use crate::frame::FrameCapturedEventArgs;
 use crate::kinect::KinectSensor;
 use std::ptr;
 use windows::Win32::Foundation::{E_FAIL, E_POINTER};
 use windows::core::Error;
+
+pub struct Body {
+    ptr: *mut IBody,
+}
+
+impl Body {
+    pub(crate) fn new(ptr: *mut IBody) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+
+    pub fn get_joints(&self, joints: &mut [Joint]) -> Result<(), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.GetJoints.ok_or(E_FAIL)?;
+        let capacity = joints.len() as UINT;
+        let hr = unsafe { get_fn(self.ptr, capacity, joints.as_mut_ptr()) };
+        if hr.is_ok() {
+            Ok(())
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_joint_orientations(
+        &self,
+        joint_orientations: &mut [JointOrientation],
+    ) -> Result<(), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.GetJointOrientations.ok_or(E_FAIL)?;
+        let capacity = joint_orientations.len() as UINT;
+        let hr = unsafe { get_fn(self.ptr, capacity, joint_orientations.as_mut_ptr()) };
+        if hr.is_ok() {
+            Ok(())
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_engaged(&self) -> Result<DetectionResult, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_Engaged.ok_or(E_FAIL)?;
+        let mut detection_result: DetectionResult = unsafe { std::mem::zeroed() };
+        let hr = unsafe { get_fn(self.ptr, &mut detection_result) };
+        if hr.is_ok() {
+            Ok(detection_result)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_expression_detection_results(
+        &self,
+        detection_results: &mut [DetectionResult],
+    ) -> Result<(), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.GetExpressionDetectionResults.ok_or(E_FAIL)?;
+        let capacity = detection_results.len() as UINT;
+        let hr = unsafe { get_fn(self.ptr, capacity, detection_results.as_mut_ptr()) };
+        if hr.is_ok() {
+            Ok(())
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_activity_detection_results(
+        &self,
+        detection_results: &mut [DetectionResult],
+    ) -> Result<(), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.GetActivityDetectionResults.ok_or(E_FAIL)?;
+        let capacity = detection_results.len() as UINT;
+        let hr = unsafe { get_fn(self.ptr, capacity, detection_results.as_mut_ptr()) };
+        if hr.is_ok() {
+            Ok(())
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_appearance_detection_results(
+        &self,
+        detection_results: &mut [DetectionResult],
+    ) -> Result<(), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.GetAppearanceDetectionResults.ok_or(E_FAIL)?;
+        let capacity = detection_results.len() as UINT;
+        let hr = unsafe { get_fn(self.ptr, capacity, detection_results.as_mut_ptr()) };
+        if hr.is_ok() {
+            Ok(())
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_hand_left_state(&self) -> Result<HandState, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_HandLeftState.ok_or(E_FAIL)?;
+        let mut hand_state: HandState = unsafe { std::mem::zeroed() };
+        let hr = unsafe { get_fn(self.ptr, &mut hand_state) };
+        if hr.is_ok() {
+            Ok(hand_state)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_hand_left_confidence(&self) -> Result<TrackingConfidence, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_HandLeftConfidence.ok_or(E_FAIL)?;
+        let mut confidence: TrackingConfidence = unsafe { std::mem::zeroed() };
+        let hr = unsafe { get_fn(self.ptr, &mut confidence) };
+        if hr.is_ok() {
+            Ok(confidence)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_hand_right_state(&self) -> Result<HandState, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_HandRightState.ok_or(E_FAIL)?;
+        let mut hand_state: HandState = unsafe { std::mem::zeroed() };
+        let hr = unsafe { get_fn(self.ptr, &mut hand_state) };
+        if hr.is_ok() {
+            Ok(hand_state)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_hand_right_confidence(&self) -> Result<TrackingConfidence, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_HandRightConfidence.ok_or(E_FAIL)?;
+        let mut confidence: TrackingConfidence = unsafe { std::mem::zeroed() };
+        let hr = unsafe { get_fn(self.ptr, &mut confidence) };
+        if hr.is_ok() {
+            Ok(confidence)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_clipped_edges(&self) -> Result<u32, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_ClippedEdges.ok_or(E_FAIL)?;
+        let mut clipped_edges: ULONG = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut clipped_edges) };
+        if hr.is_ok() {
+            Ok(clipped_edges)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_tracking_id(&self) -> Result<u64, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_TrackingId.ok_or(E_FAIL)?;
+        let mut tracking_id: crate::bindings::UINT64 = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut tracking_id) };
+        if hr.is_ok() {
+            Ok(tracking_id)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_is_tracked(&self) -> Result<bool, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_IsTracked.ok_or(E_FAIL)?;
+        let mut tracked: BOOLEAN = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut tracked) };
+        if hr.is_ok() {
+            Ok(tracked != 0)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_is_restricted(&self) -> Result<bool, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_IsRestricted.ok_or(E_FAIL)?;
+        let mut is_restricted: BOOLEAN = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut is_restricted) };
+        if hr.is_ok() {
+            Ok(is_restricted != 0)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_lean(&self) -> Result<crate::bindings::PointF, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_Lean.ok_or(E_FAIL)?;
+        let mut amount: crate::bindings::PointF = unsafe { std::mem::zeroed() };
+        let hr = unsafe { get_fn(self.ptr, &mut amount) };
+        if hr.is_ok() {
+            Ok(amount)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_lean_tracking_state(&self) -> Result<crate::bindings::TrackingState, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_LeanTrackingState.ok_or(E_FAIL)?;
+        let mut tracking_state: crate::bindings::TrackingState = unsafe { std::mem::zeroed() };
+        let hr = unsafe { get_fn(self.ptr, &mut tracking_state) };
+        if hr.is_ok() {
+            Ok(tracking_state)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+}
+
+impl Drop for Body {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
+                    if let Some(release_fn) = vtbl.Release {
+                        release_fn(self.ptr);
+                    }
+                }
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct BodyHandPair {
+    ptr: *mut IBodyHandPair,
+}
+
+impl BodyHandPair {
+    pub(crate) fn new(ptr: *mut IBodyHandPair) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+
+    pub fn get_body_tracking_id(&self) -> Result<u64, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_BodyTrackingId.ok_or(E_FAIL)?;
+        let mut value: crate::bindings::UINT64 = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut value) };
+        if hr.is_ok() {
+            Ok(value)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn put_body_tracking_id(&self, value: u64) -> Result<(), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let put_fn = vtbl.put_BodyTrackingId.ok_or(E_FAIL)?;
+        let hr = unsafe { put_fn(self.ptr, value) };
+        if hr.is_ok() {
+            Ok(())
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_hand_type(&self) -> Result<crate::bindings::HandType, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_HandType.ok_or(E_FAIL)?;
+        let mut value: crate::bindings::HandType = unsafe { std::mem::zeroed() };
+        let hr = unsafe { get_fn(self.ptr, &mut value) };
+        if hr.is_ok() {
+            Ok(value)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn put_hand_type(&self, value: crate::bindings::HandType) -> Result<(), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let put_fn = vtbl.put_HandType.ok_or(E_FAIL)?;
+        let hr = unsafe { put_fn(self.ptr, value) };
+        if hr.is_ok() {
+            Ok(())
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+}
+
+impl Drop for BodyHandPair {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
+                    if let Some(release_fn) = vtbl.Release {
+                        release_fn(self.ptr);
+                    }
+                }
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
 
 pub struct BodyFrameSource {
     ptr: *mut IBodyFrameSource,
@@ -416,7 +779,7 @@ impl BodyFrame {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.GetAndRefreshBodyData.ok_or(E_FAIL)?;
-        let capacity = bodies.len() as crate::bindings::UINT;
+        let capacity = bodies.len() as UINT;
         let hr = unsafe { get_fn(self.ptr, capacity, bodies.as_mut_ptr()) };
         if hr.is_ok() {
             Ok(())
