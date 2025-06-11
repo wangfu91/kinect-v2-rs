@@ -1,7 +1,7 @@
 use crate::audio::AudioSource;
 use crate::bindings::{
-    self, BOOLEAN, GetDefaultKinectSensor, IIsAvailableChangedEventArgs, UINT, ULONG,
-    WAITABLE_HANDLE, WCHAR,
+    self, BOOLEAN, GetDefaultKinectSensor, IIsAvailableChangedEventArgs, IKinectSensor, UINT,
+    ULONG, WAITABLE_HANDLE, WCHAR,
 };
 use crate::body::{BodyFrameSource, BodyIndexFrameSource};
 use crate::color::ColorFrameSource;
@@ -51,11 +51,11 @@ impl Drop for IsAvailableChangedEventArgs {
 }
 
 pub struct KinectSensor {
-    ptr: *mut bindings::IKinectSensor,
+    ptr: *mut IKinectSensor,
 }
 
 impl KinectSensor {
-    fn new(ptr: *mut bindings::IKinectSensor) -> Self {
+    pub(crate) fn new(ptr: *mut IKinectSensor) -> Self {
         assert!(!ptr.is_null(), "KinectSensor pointer cannot be null");
         Self { ptr }
     }
@@ -370,7 +370,7 @@ impl Drop for KinectSensor {
 }
 
 pub fn get_default_kinect_sensor() -> Result<KinectSensor, Error> {
-    let mut kinect_sensor_ptr: *mut bindings::IKinectSensor = ptr::null_mut();
+    let mut kinect_sensor_ptr: *mut IKinectSensor = ptr::null_mut();
     let hr = unsafe { GetDefaultKinectSensor(&mut kinect_sensor_ptr) };
     if hr.is_ok() {
         if kinect_sensor_ptr.is_null() {

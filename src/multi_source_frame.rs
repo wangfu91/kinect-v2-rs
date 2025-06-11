@@ -4,6 +4,9 @@ use crate::bindings::{
     ILongExposureInfraredFrameReference, IMultiSourceFrame, IMultiSourceFrameArrivedEventArgs,
     IMultiSourceFrameReader, IMultiSourceFrameReference, ULONG, WAITABLE_HANDLE,
 };
+use crate::body::{BodyFrameReference, BodyIndexFrameReference};
+use crate::depth::DepthFrameReference;
+use crate::kinect::KinectSensor;
 use crate::{
     color::ColorFrameReference, infrared::InfraredFrameReference,
     long_exposure_infrared::LongExposureInfraredFrameReference,
@@ -353,112 +356,6 @@ impl MultiSourceFrame {
 }
 
 impl Drop for MultiSourceFrame {
-    fn drop(&mut self) {
-        if !self.ptr.is_null() {
-            unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
-                }
-            }
-            self.ptr = ptr::null_mut();
-        }
-    }
-}
-
-// Temporary frame reference structs - these should be moved to their respective modules
-pub struct DepthFrameReference {
-    ptr: *mut IDepthFrameReference,
-}
-
-impl DepthFrameReference {
-    pub(crate) fn new(ptr: *mut IDepthFrameReference) -> Self {
-        assert!(!ptr.is_null());
-        Self { ptr }
-    }
-}
-
-impl Drop for DepthFrameReference {
-    fn drop(&mut self) {
-        if !self.ptr.is_null() {
-            unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
-                }
-            }
-            self.ptr = ptr::null_mut();
-        }
-    }
-}
-
-pub struct BodyFrameReference {
-    ptr: *mut IBodyFrameReference,
-}
-
-impl BodyFrameReference {
-    pub(crate) fn new(ptr: *mut IBodyFrameReference) -> Self {
-        assert!(!ptr.is_null());
-        Self { ptr }
-    }
-}
-
-impl Drop for BodyFrameReference {
-    fn drop(&mut self) {
-        if !self.ptr.is_null() {
-            unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
-                }
-            }
-            self.ptr = ptr::null_mut();
-        }
-    }
-}
-
-pub struct BodyIndexFrameReference {
-    ptr: *mut IBodyIndexFrameReference,
-}
-
-impl BodyIndexFrameReference {
-    pub(crate) fn new(ptr: *mut IBodyIndexFrameReference) -> Self {
-        assert!(!ptr.is_null());
-        Self { ptr }
-    }
-}
-
-impl Drop for BodyIndexFrameReference {
-    fn drop(&mut self) {
-        if !self.ptr.is_null() {
-            unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
-                }
-            }
-            self.ptr = ptr::null_mut();
-        }
-    }
-}
-
-// Temporary KinectSensor wrapper for the get_kinect_sensor method
-pub struct KinectSensor {
-    ptr: *mut IKinectSensor,
-}
-
-impl KinectSensor {
-    pub(crate) fn new(ptr: *mut IKinectSensor) -> Self {
-        assert!(!ptr.is_null());
-        Self { ptr }
-    }
-}
-
-impl Drop for KinectSensor {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
