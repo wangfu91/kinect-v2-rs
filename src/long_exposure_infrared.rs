@@ -1,18 +1,19 @@
 use crate::bindings::{
-    BOOLEAN, IFrameCapturedEventArgs, IFrameDescription, IInfraredFrame,
-    IInfraredFrameArrivedEventArgs, IInfraredFrameReader, IInfraredFrameReference,
-    IInfraredFrameSource, IKinectSensor, TIMESPAN, UINT, UINT16, WAITABLE_HANDLE,
+    BOOLEAN, IFrameCapturedEventArgs, IFrameDescription, IKinectSensor, ILongExposureInfraredFrame,
+    ILongExposureInfraredFrameArrivedEventArgs, ILongExposureInfraredFrameReader,
+    ILongExposureInfraredFrameReference, ILongExposureInfraredFrameSource, TIMESPAN, UINT, UINT16,
+    WAITABLE_HANDLE,
 };
 use std::ptr;
 use windows::Win32::Foundation::{E_FAIL, E_POINTER};
 use windows::core::Error;
 
-pub struct InfraredFrame {
-    ptr: *mut IInfraredFrame,
+pub struct LongExposureInfraredFrame {
+    ptr: *mut ILongExposureInfraredFrame,
 }
 
-impl InfraredFrame {
-    pub(crate) fn new(ptr: *mut IInfraredFrame) -> Self {
+impl LongExposureInfraredFrame {
+    pub(crate) fn new(ptr: *mut ILongExposureInfraredFrame) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
@@ -54,6 +55,20 @@ impl InfraredFrame {
             Ok((capacity, buffer))
         }
     }
+    pub fn get_relative_time(&self) -> Result<TIMESPAN, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
+        let get_time_fn = vtbl.get_RelativeTime.ok_or_else(|| Error::from(E_FAIL))?;
+        let mut relative_time: TIMESPAN = 0;
+        let hr = unsafe { get_time_fn(self.ptr, &mut relative_time) };
+        if hr.is_err() {
+            Err(Error::from_hresult(hr))
+        } else {
+            Ok(relative_time)
+        }
+    }
 
     pub fn get_frame_description(&self) -> Result<*mut IFrameDescription, Error> {
         if self.ptr.is_null() {
@@ -72,44 +87,31 @@ impl InfraredFrame {
         }
     }
 
-    pub fn get_relative_time(&self) -> Result<TIMESPAN, Error> {
-        if self.ptr.is_null() {
-            return Err(Error::from(E_POINTER));
-        }
-        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
-        let get_time_fn = vtbl.get_RelativeTime.ok_or_else(|| Error::from(E_FAIL))?;
-        let mut relative_time: TIMESPAN = 0;
-        let hr = unsafe { get_time_fn(self.ptr, &mut relative_time) };
-        if hr.is_err() {
-            Err(Error::from_hresult(hr))
-        } else {
-            Ok(relative_time)
-        }
-    }
-
-    pub fn get_infrared_frame_source(&self) -> Result<InfraredFrameSource, Error> {
+    pub fn get_long_exposure_infrared_frame_source(
+        &self,
+    ) -> Result<LongExposureInfraredFrameSource, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
         let get_source_fn = vtbl
-            .get_InfraredFrameSource
+            .get_LongExposureInfraredFrameSource
             .ok_or_else(|| Error::from(E_FAIL))?;
-        let mut infrared_frame_source_ptr: *mut IInfraredFrameSource = ptr::null_mut();
-        let hr = unsafe { get_source_fn(self.ptr, &mut infrared_frame_source_ptr) };
+        let mut source_ptr: *mut ILongExposureInfraredFrameSource = ptr::null_mut();
+        let hr = unsafe { get_source_fn(self.ptr, &mut source_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
-            if infrared_frame_source_ptr.is_null() {
+            if source_ptr.is_null() {
                 Err(Error::from(E_POINTER))
             } else {
-                Ok(InfraredFrameSource::new(infrared_frame_source_ptr))
+                Ok(LongExposureInfraredFrameSource::new(source_ptr))
             }
         }
     }
 }
 
-impl Drop for InfraredFrame {
+impl Drop for LongExposureInfraredFrame {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
@@ -124,11 +126,11 @@ impl Drop for InfraredFrame {
     }
 }
 
-pub struct InfraredFrameSource {
-    ptr: *mut IInfraredFrameSource,
+pub struct LongExposureInfraredFrameSource {
+    ptr: *mut ILongExposureInfraredFrameSource,
 }
-impl InfraredFrameSource {
-    pub(crate) fn new(ptr: *mut IInfraredFrameSource) -> Self {
+impl LongExposureInfraredFrameSource {
+    pub(crate) fn new(ptr: *mut ILongExposureInfraredFrameSource) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
@@ -204,13 +206,13 @@ impl InfraredFrameSource {
         }
     }
 
-    pub fn open_reader(&self) -> Result<InfraredFrameReader, Error> {
+    pub fn open_reader(&self) -> Result<LongExposureInfraredFrameReader, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
         let open_reader_fn = vtbl.OpenReader.ok_or_else(|| Error::from(E_FAIL))?;
-        let mut reader_ptr: *mut IInfraredFrameReader = ptr::null_mut();
+        let mut reader_ptr: *mut ILongExposureInfraredFrameReader = ptr::null_mut();
         let hr = unsafe { open_reader_fn(self.ptr, &mut reader_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
@@ -218,7 +220,7 @@ impl InfraredFrameSource {
             if reader_ptr.is_null() {
                 Err(Error::from(E_POINTER))
             } else {
-                Ok(InfraredFrameReader::new(reader_ptr))
+                Ok(LongExposureInfraredFrameReader::new(reader_ptr))
             }
         }
     }
@@ -246,17 +248,16 @@ impl InfraredFrameSource {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
         let get_sensor_fn = vtbl.get_KinectSensor.ok_or_else(|| Error::from(E_FAIL))?;
-        let mut sensor: *mut IKinectSensor = ptr::null_mut();
-        let hr = unsafe { get_sensor_fn(self.ptr, &mut sensor) };
+        let mut sensor_ptr: *mut IKinectSensor = ptr::null_mut();
+        let hr = unsafe { get_sensor_fn(self.ptr, &mut sensor_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
-            Ok(sensor)
+            Ok(sensor_ptr)
         }
     }
 }
-
-impl Drop for InfraredFrameSource {
+impl Drop for LongExposureInfraredFrameSource {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
@@ -271,12 +272,12 @@ impl Drop for InfraredFrameSource {
     }
 }
 
-pub struct InfraredFrameReader {
-    ptr: *mut IInfraredFrameReader,
+pub struct LongExposureInfraredFrameReader {
+    ptr: *mut ILongExposureInfraredFrameReader,
 }
 
-impl InfraredFrameReader {
-    pub(crate) fn new(ptr: *mut IInfraredFrameReader) -> Self {
+impl LongExposureInfraredFrameReader {
+    pub(crate) fn new(ptr: *mut ILongExposureInfraredFrameReader) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
@@ -313,10 +314,11 @@ impl InfraredFrameReader {
             Ok(())
         }
     }
+
     pub fn get_frame_arrived_event_data(
         &self,
         waitable_handle: WAITABLE_HANDLE,
-    ) -> Result<InfraredFrameArrivedEventArgs, Error> {
+    ) -> Result<LongExposureInfraredFrameArrivedEventArgs, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -324,7 +326,7 @@ impl InfraredFrameReader {
         let get_data_fn = vtbl
             .GetFrameArrivedEventData
             .ok_or_else(|| Error::from(E_FAIL))?;
-        let mut event_data: *mut IInfraredFrameArrivedEventArgs = ptr::null_mut();
+        let mut event_data: *mut ILongExposureInfraredFrameArrivedEventArgs = ptr::null_mut();
         let hr = unsafe { get_data_fn(self.ptr, waitable_handle, &mut event_data) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
@@ -332,18 +334,18 @@ impl InfraredFrameReader {
             if event_data.is_null() {
                 Err(Error::from(E_POINTER))
             } else {
-                Ok(InfraredFrameArrivedEventArgs::new(event_data))
+                Ok(LongExposureInfraredFrameArrivedEventArgs::new(event_data))
             }
         }
     }
 
-    pub fn acquire_latest_frame(&self) -> Result<InfraredFrame, Error> {
+    pub fn acquire_latest_frame(&self) -> Result<LongExposureInfraredFrame, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
         let acquire_fn = vtbl.AcquireLatestFrame.ok_or_else(|| Error::from(E_FAIL))?;
-        let mut frame_ptr: *mut IInfraredFrame = ptr::null_mut();
+        let mut frame_ptr: *mut ILongExposureInfraredFrame = ptr::null_mut();
         let hr = unsafe { acquire_fn(self.ptr, &mut frame_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
@@ -351,7 +353,7 @@ impl InfraredFrameReader {
             if frame_ptr.is_null() {
                 Err(Error::from(E_POINTER))
             } else {
-                Ok(InfraredFrame::new(frame_ptr))
+                Ok(LongExposureInfraredFrame::new(frame_ptr))
             }
         }
     }
@@ -386,15 +388,17 @@ impl InfraredFrameReader {
         }
     }
 
-    pub fn get_infrared_frame_source(&self) -> Result<InfraredFrameSource, Error> {
+    pub fn get_long_exposure_infrared_frame_source(
+        &self,
+    ) -> Result<LongExposureInfraredFrameSource, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
         let get_source_fn = vtbl
-            .get_InfraredFrameSource
+            .get_LongExposureInfraredFrameSource
             .ok_or_else(|| Error::from(E_FAIL))?;
-        let mut source_ptr: *mut IInfraredFrameSource = ptr::null_mut();
+        let mut source_ptr: *mut ILongExposureInfraredFrameSource = ptr::null_mut();
         let hr = unsafe { get_source_fn(self.ptr, &mut source_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
@@ -402,13 +406,13 @@ impl InfraredFrameReader {
             if source_ptr.is_null() {
                 Err(Error::from(E_POINTER))
             } else {
-                Ok(InfraredFrameSource::new(source_ptr))
+                Ok(LongExposureInfraredFrameSource::new(source_ptr))
             }
         }
     }
 }
 
-impl Drop for InfraredFrameReader {
+impl Drop for LongExposureInfraredFrameReader {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
@@ -423,23 +427,23 @@ impl Drop for InfraredFrameReader {
     }
 }
 
-pub struct InfraredFrameReference {
-    ptr: *mut IInfraredFrameReference,
+pub struct LongExposureInfraredFrameReference {
+    ptr: *mut ILongExposureInfraredFrameReference,
 }
 
-impl InfraredFrameReference {
-    pub(crate) fn new(ptr: *mut IInfraredFrameReference) -> Self {
+impl LongExposureInfraredFrameReference {
+    pub(crate) fn new(ptr: *mut ILongExposureInfraredFrameReference) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
 
-    pub fn acquire_frame(&self) -> Result<InfraredFrame, Error> {
+    pub fn acquire_frame(&self) -> Result<LongExposureInfraredFrame, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
         let acquire_frame_fn = vtbl.AcquireFrame.ok_or_else(|| Error::from(E_FAIL))?;
-        let mut frame_ptr: *mut IInfraredFrame = ptr::null_mut();
+        let mut frame_ptr: *mut ILongExposureInfraredFrame = ptr::null_mut();
         let hr = unsafe { acquire_frame_fn(self.ptr, &mut frame_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
@@ -447,7 +451,7 @@ impl InfraredFrameReference {
             if frame_ptr.is_null() {
                 Err(Error::from(E_POINTER))
             } else {
-                Ok(InfraredFrame::new(frame_ptr))
+                Ok(LongExposureInfraredFrame::new(frame_ptr))
             }
         }
     }
@@ -468,7 +472,7 @@ impl InfraredFrameReference {
     }
 }
 
-impl Drop for InfraredFrameReference {
+impl Drop for LongExposureInfraredFrameReference {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
@@ -483,23 +487,23 @@ impl Drop for InfraredFrameReference {
     }
 }
 
-pub struct InfraredFrameArrivedEventArgs {
-    ptr: *mut IInfraredFrameArrivedEventArgs,
+pub struct LongExposureInfraredFrameArrivedEventArgs {
+    ptr: *mut ILongExposureInfraredFrameArrivedEventArgs,
 }
 
-impl InfraredFrameArrivedEventArgs {
-    pub(crate) fn new(ptr: *mut IInfraredFrameArrivedEventArgs) -> Self {
+impl LongExposureInfraredFrameArrivedEventArgs {
+    pub(crate) fn new(ptr: *mut ILongExposureInfraredFrameArrivedEventArgs) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
 
-    pub fn get_frame_reference(&self) -> Result<InfraredFrameReference, Error> {
+    pub fn get_frame_reference(&self) -> Result<LongExposureInfraredFrameReference, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
         let get_frame_reference_fn = vtbl.get_FrameReference.ok_or_else(|| Error::from(E_FAIL))?;
-        let mut frame_reference_ptr: *mut IInfraredFrameReference = ptr::null_mut();
+        let mut frame_reference_ptr: *mut ILongExposureInfraredFrameReference = ptr::null_mut();
         let hr = unsafe { get_frame_reference_fn(self.ptr, &mut frame_reference_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
@@ -507,13 +511,13 @@ impl InfraredFrameArrivedEventArgs {
             if frame_reference_ptr.is_null() {
                 Err(Error::from(E_POINTER))
             } else {
-                Ok(InfraredFrameReference::new(frame_reference_ptr))
+                Ok(LongExposureInfraredFrameReference::new(frame_reference_ptr))
             }
         }
     }
 }
 
-impl Drop for InfraredFrameArrivedEventArgs {
+impl Drop for LongExposureInfraredFrameArrivedEventArgs {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {

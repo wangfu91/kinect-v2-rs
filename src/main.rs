@@ -7,6 +7,8 @@ pub mod depth;
 pub mod frame;
 pub mod infrared;
 pub mod kinect;
+pub mod long_exposure_infrared;
+pub mod multi_source_frame;
 pub mod utils;
 
 use crate::bindings::WAITABLE_HANDLE;
