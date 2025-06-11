@@ -545,12 +545,51 @@ impl Drop for DepthFrame {
 // tests
 #[cfg(test)]
 mod tests {
+    use std::{thread, time::Duration};
+
     use crate::{FRAME_WAIT_TIMEOUT_MS, kinect};
     use anyhow::Context;
     use windows::Win32::{
         Foundation::{WAIT_OBJECT_0, WAIT_TIMEOUT},
-        System::Threading::WaitForSingleObject,
+        System::{Com::Urlmon::E_PENDING, Threading::WaitForSingleObject},
     };
+
+    #[test]
+    fn get_latest_depth_frame() -> anyhow::Result<()> {
+        let kinect = kinect::get_default_kinect_sensor()?;
+        kinect.open()?;
+        let depth_frame_source = kinect.depth_frame_source()?;
+        let depth_frame_reader = depth_frame_source.open_reader()?;
+
+        let mut frame_count = 0;
+        loop {
+            match depth_frame_reader.acquire_latest_frame() {
+                Ok(depth_frame) => {
+                    let frame_description = depth_frame.get_frame_description()?;
+                    let width = frame_description.get_width()?;
+                    let height = frame_description.get_height()?;
+                    assert_eq!(width, 512);
+                    assert_eq!(height, 424);
+                    frame_count += 1;
+
+                    if frame_count > 10 {
+                        break; // Exit after getting 10 frames
+                    }
+                }
+                Err(e) => {
+                    if e.code() == E_PENDING.into() {
+                        // If the frame is not ready yet, wait and try again
+                        thread::sleep(Duration::from_millis(100));
+                    } else {
+                        // If it's a different error, return it
+                        return Err(anyhow::Error::new(e));
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
 
     #[test]
     fn subscribe_depth_frame_arrived_event() -> anyhow::Result<()> {
@@ -561,8 +600,8 @@ mod tests {
             .depth_frame_source()
             .context("Failed to get depth frame source")?;
 
-        let reader = depth_frame_source.open_reader()?;
-        let waitable_handle = reader.subscribe_frame_arrived()?;
+        let depth_frame_reader = depth_frame_source.open_reader()?;
+        let waitable_handle = depth_frame_reader.subscribe_frame_arrived()?;
         let mut frame_count = 0;
 
         let is_active = depth_frame_source.get_is_active()?;
@@ -571,7 +610,8 @@ mod tests {
         loop {
             let result = unsafe { WaitForSingleObject(waitable_handle, FRAME_WAIT_TIMEOUT_MS) };
             if result == WAIT_OBJECT_0 {
-                let event_args = reader.get_frame_arrived_event_data(waitable_handle)?;
+                let event_args =
+                    depth_frame_reader.get_frame_arrived_event_data(waitable_handle)?;
                 let frame_reference = event_args.get_frame_reference()?;
                 let depth_frame = frame_reference.acquire_frame()?;
                 let frame_description = depth_frame.get_frame_description()?;
