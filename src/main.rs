@@ -18,7 +18,7 @@ use windows::Win32::{
     System::Threading::WaitForSingleObject,
 };
 
-const FRAME_WAIT_TIMEOUT_MS: u32 = 100;
+pub const FRAME_WAIT_TIMEOUT_MS: u32 = 100;
 
 pub fn main() {
     if let Err(e) = color_frame_demo() {

@@ -668,3 +668,103 @@ impl Drop for ColorFrameSource {
         }
     }
 }
+
+// tests
+#[cfg(test)]
+mod tests {
+    use std::{thread, time::Duration};
+
+    use super::*;
+    use crate::{FRAME_WAIT_TIMEOUT_MS, kinect};
+    use anyhow::Context;
+    use windows::Win32::{
+        Foundation::{WAIT_OBJECT_0, WAIT_TIMEOUT},
+        System::{Com::Urlmon::E_PENDING, Threading::WaitForSingleObject},
+    };
+
+    #[test]
+    fn get_latest_color_frame() -> anyhow::Result<()> {
+        let kinect = kinect::get_default_kinect_sensor()?;
+        kinect.open()?;
+        let color_frame_source = kinect.color_frame_source()?;
+        let color_frame_reader = color_frame_source.open_reader()?;
+
+        let mut frame_count = 0;
+        loop {
+            match color_frame_reader.acquire_latest_frame() {
+                Ok(color_frame) => {
+                    let frame_description = color_frame.get_frame_description()?;
+                    let width = frame_description.get_width()?;
+                    let height = frame_description.get_height()?;
+                    assert_eq!(width, 1920);
+                    assert_eq!(height, 1080);
+                    frame_count += 1;
+
+                    if frame_count > 10 {
+                        break; // Exit after getting 10 frames
+                    }
+                }
+                Err(e) => {
+                    if e.code() == E_PENDING.into() {
+                        // If the frame is not ready yet, wait and try again
+                        thread::sleep(Duration::from_millis(100));
+                    } else {
+                        // If it's a different error, return it
+                        return Err(anyhow::Error::new(e));
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn subscribe_frame_arrived_event() -> anyhow::Result<()> {
+        let kinect = kinect::get_default_kinect_sensor()?;
+        kinect.open()?;
+        let color_frame_source = kinect.color_frame_source()?;
+        let color_frame_reader = color_frame_source.open_reader()?;
+        let mut waitable_handle: WAITABLE_HANDLE = WAITABLE_HANDLE::default();
+        color_frame_reader.subscribe_frame_arrived(&mut waitable_handle)?;
+        let mut frame_count = 0;
+        loop {
+            let result = unsafe { WaitForSingleObject(waitable_handle, FRAME_WAIT_TIMEOUT_MS) };
+            if WAIT_OBJECT_0 == result {
+                let event_args = color_frame_reader
+                    .get_frame_arrived_event_data(waitable_handle)
+                    .context("Failed to get frame arrived event data")?;
+
+                let frame_reference = event_args.get_frame_reference()?;
+                let color_frame = frame_reference.acquire_frame()?;
+                let frame_description = color_frame.get_frame_description()?;
+                let width = frame_description.get_width()?;
+                let height = frame_description.get_height()?;
+                let rel_time = frame_reference.get_relative_time()?;
+
+                assert_eq!(width, 1920);
+                assert_eq!(height, 1080);
+                assert!(rel_time > 0);
+
+                frame_count += 1;
+                if frame_count > 10 {
+                    break; // Exit after getting 10 frames
+                }
+            } else if WAIT_TIMEOUT == result {
+                eprintln!("No new color frame available, waiting...");
+            } else {
+                return Err(anyhow::anyhow!(
+                    "WaitForSingleObject failed with result: {:?}",
+                    result
+                ));
+            }
+        }
+
+        // Unsubscribe after testing
+        color_frame_reader.unsubscribe_frame_arrived(waitable_handle)?;
+
+        Ok(())
+    }
+
+    // Additional tests can be added here for other methods and functionalities
+}
