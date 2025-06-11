@@ -1,6 +1,5 @@
 use crate::bindings::{
-    FrameCapturedStatus, FrameSourceTypes, IFrameCapturedEventArgs, IFrameDescription,
-    IMultiSourceFrameReader, TIMESPAN,
+    FrameCapturedStatus, FrameSourceTypes, IFrameCapturedEventArgs, IFrameDescription, TIMESPAN,
 };
 use std::ptr;
 use windows::{
@@ -218,4 +217,3 @@ impl Drop for FrameCapturedEventArgs {
         }
     }
 }
-
