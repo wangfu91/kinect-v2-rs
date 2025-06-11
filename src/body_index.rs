@@ -18,7 +18,124 @@ impl BodyIndexFrameReader {
         assert!(!ptr.is_null());
         Self { ptr }
     }
-    // TODO: Implement methods for BodyIndexFrameReader
+
+    pub fn acquire_latest_frame(&self) -> Result<BodyIndexFrame, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let acquire_fn = vtbl.AcquireLatestFrame.ok_or(E_FAIL)?;
+        let mut frame_ptr: *mut IBodyIndexFrame = ptr::null_mut();
+        let hr = unsafe { acquire_fn(self.ptr, &mut frame_ptr) };
+        if hr.is_ok() {
+            if frame_ptr.is_null() {
+                return Err(Error::from_hresult(E_FAIL));
+            }
+            Ok(BodyIndexFrame::new(frame_ptr))
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn subscribe_frame_arrived(
+        &self,
+        waitable_handle: &mut WAITABLE_HANDLE,
+    ) -> Result<(), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let sub_fn = vtbl.SubscribeFrameArrived.ok_or(E_FAIL)?;
+        let hr = unsafe { sub_fn(self.ptr, waitable_handle) };
+        if hr.is_ok() {
+            Ok(())
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn unsubscribe_frame_arrived(&self, handle: WAITABLE_HANDLE) -> Result<(), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let unsub_fn = vtbl.UnsubscribeFrameArrived.ok_or(E_FAIL)?;
+        let hr = unsafe { unsub_fn(self.ptr, handle) };
+        if hr.is_ok() {
+            Ok(())
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_frame_arrived_event_data(
+        &self,
+        handle: WAITABLE_HANDLE,
+    ) -> Result<BodyIndexFrameArrivedEventArgs, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.GetFrameArrivedEventData.ok_or(E_FAIL)?;
+        let mut event_data_ptr: *mut crate::bindings::IBodyIndexFrameArrivedEventArgs =
+            ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, handle, &mut event_data_ptr) };
+        if hr.is_ok() {
+            if event_data_ptr.is_null() {
+                return Err(Error::from_hresult(E_FAIL));
+            }
+            Ok(BodyIndexFrameArrivedEventArgs::new(event_data_ptr))
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_is_paused(&self) -> Result<bool, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_IsPaused.ok_or(E_FAIL)?;
+        let mut is_paused: BOOLEAN = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut is_paused) };
+        if hr.is_ok() {
+            Ok(is_paused != 0)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn put_is_paused(&self, is_paused: bool) -> Result<(), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let put_fn = vtbl.put_IsPaused.ok_or(E_FAIL)?;
+        let hr = unsafe { put_fn(self.ptr, is_paused as BOOLEAN) };
+        if hr.is_ok() {
+            Ok(())
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_body_index_frame_source(&self) -> Result<BodyIndexFrameSource, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_BodyIndexFrameSource.ok_or(E_FAIL)?;
+        let mut source_ptr: *mut IBodyIndexFrameSource = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, &mut source_ptr) };
+        if hr.is_ok() {
+            if source_ptr.is_null() {
+                return Err(Error::from_hresult(E_FAIL));
+            }
+            Ok(BodyIndexFrameSource::new(source_ptr))
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
 }
 impl Drop for BodyIndexFrameReader {
     fn drop(&mut self) {
@@ -44,7 +161,88 @@ impl BodyIndexFrame {
         assert!(!ptr.is_null());
         Self { ptr }
     }
-    // TODO: Implement methods for BodyIndexFrame
+
+    pub fn copy_frame_data_to_array(&self, frame_data: &mut [u8]) -> Result<(), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let copy_fn = vtbl.CopyFrameDataToArray.ok_or(E_FAIL)?;
+        let capacity = frame_data.len() as crate::bindings::UINT;
+        let hr = unsafe { copy_fn(self.ptr, capacity, frame_data.as_mut_ptr()) };
+        if hr.is_ok() {
+            Ok(())
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn access_underlying_buffer(&self) -> Result<(*mut u8, u32), Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let access_fn = vtbl.AccessUnderlyingBuffer.ok_or(E_FAIL)?;
+        let mut capacity: crate::bindings::UINT = 0;
+        let mut buffer: *mut crate::bindings::BYTE = ptr::null_mut();
+        let hr = unsafe { access_fn(self.ptr, &mut capacity, &mut buffer) };
+        if hr.is_ok() {
+            Ok((buffer, capacity))
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_frame_description(&self) -> Result<FrameDescription, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_FrameDescription.ok_or(E_FAIL)?;
+        let mut fd_ptr: *mut IFrameDescription = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, &mut fd_ptr) };
+        if hr.is_ok() {
+            if fd_ptr.is_null() {
+                return Err(Error::from_hresult(E_FAIL));
+            }
+            Ok(FrameDescription::new(fd_ptr))
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_relative_time(&self) -> Result<TIMESPAN, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_RelativeTime.ok_or(E_FAIL)?;
+        let mut time: TIMESPAN = 0;
+        let hr = unsafe { get_fn(self.ptr, &mut time) };
+        if hr.is_ok() {
+            Ok(time)
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+
+    pub fn get_body_index_frame_source(&self) -> Result<BodyIndexFrameSource, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_BodyIndexFrameSource.ok_or(E_FAIL)?;
+        let mut source_ptr: *mut IBodyIndexFrameSource = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, &mut source_ptr) };
+        if hr.is_ok() {
+            if source_ptr.is_null() {
+                return Err(Error::from_hresult(E_FAIL));
+            }
+            Ok(BodyIndexFrameSource::new(source_ptr))
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
 }
 impl Drop for BodyIndexFrame {
     fn drop(&mut self) {
@@ -250,6 +448,50 @@ impl BodyIndexFrameSource {
     }
 }
 impl Drop for BodyIndexFrameSource {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
+                    if let Some(release_fn) = vtbl.Release {
+                        release_fn(self.ptr);
+                    }
+                }
+            }
+            self.ptr = ptr::null_mut();
+        }
+    }
+}
+
+pub struct BodyIndexFrameArrivedEventArgs {
+    ptr: *mut crate::bindings::IBodyIndexFrameArrivedEventArgs,
+}
+
+impl BodyIndexFrameArrivedEventArgs {
+    pub(crate) fn new(ptr: *mut crate::bindings::IBodyIndexFrameArrivedEventArgs) -> Self {
+        assert!(!ptr.is_null());
+        Self { ptr }
+    }
+
+    pub fn get_frame_reference(&self) -> Result<BodyIndexFrameReference, Error> {
+        if self.ptr.is_null() {
+            return Err(Error::from_hresult(E_POINTER));
+        }
+        let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
+        let get_fn = vtbl.get_FrameReference.ok_or(E_FAIL)?;
+        let mut frame_ref_ptr: *mut crate::bindings::IBodyIndexFrameReference = ptr::null_mut();
+        let hr = unsafe { get_fn(self.ptr, &mut frame_ref_ptr) };
+        if hr.is_ok() {
+            if frame_ref_ptr.is_null() {
+                return Err(Error::from_hresult(E_FAIL));
+            }
+            Ok(BodyIndexFrameReference::new(frame_ref_ptr))
+        } else {
+            Err(Error::from_hresult(hr))
+        }
+    }
+}
+
+impl Drop for BodyIndexFrameArrivedEventArgs {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
