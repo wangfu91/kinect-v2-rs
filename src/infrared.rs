@@ -529,3 +529,108 @@ impl Drop for InfraredFrameArrivedEventArgs {
         }
     }
 }
+
+// tests
+#[cfg(test)]
+mod tests {
+    use crate::kinect;
+    use std::{thread, time::Duration};
+    use windows::Win32::{
+        Foundation::{WAIT_OBJECT_0, WAIT_TIMEOUT},
+        System::{Com::Urlmon::E_PENDING, Threading::WaitForSingleObject},
+    };
+
+    #[test]
+    fn get_latest_infrared_frame() -> anyhow::Result<()> {
+        let kinect = kinect::get_default_kinect_sensor()?;
+        kinect.open()?;
+        let infrared_frame_source = kinect.infrared_frame_source()?;
+        let infrared_frame_reader = infrared_frame_source.open_reader()?;
+
+        let mut frame_count = 0;
+        loop {
+            match infrared_frame_reader.acquire_latest_frame() {
+                Ok(infrared_frame) => {
+                    let frame_description = infrared_frame.get_frame_description()?;
+                    let width = frame_description.get_width()?;
+                    let height = frame_description.get_height()?;
+                    let relative_time = infrared_frame.get_relative_time()?;
+                    assert_eq!(width, 512);
+                    assert_eq!(height, 424);
+                    assert!(relative_time > 0);
+                    frame_count += 1;
+                    if frame_count > 10 {
+                        break; // Exit after processing 10 frames
+                    }
+                }
+                Err(e) => {
+                    if e.code() == E_PENDING.into() {
+                        // If the frame is not ready yet, wait and try again
+                        thread::sleep(Duration::from_millis(100));
+                    } else {
+                        // If it's a different error, return it
+                        return Err(anyhow::Error::new(e));
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn subscribe_infrared_frame_arrived_event() -> anyhow::Result<()> {
+        let kinect = kinect::get_default_kinect_sensor()?;
+        kinect.open()?;
+        let infrared_frame_source = kinect.infrared_frame_source()?;
+        let infrared_frame_reader = infrared_frame_source.open_reader()?;
+        let waitable_handle = infrared_frame_reader.subscribe_frame_arrived()?;
+        let mut frame_count = 0;
+        let is_active = infrared_frame_source.get_is_active()?;
+        assert!(is_active, "Color frame source should be active");
+        loop {
+            let result = unsafe { WaitForSingleObject(waitable_handle, 100) };
+            if result == WAIT_OBJECT_0 {
+                let event_args =
+                    infrared_frame_reader.get_frame_arrived_event_data(waitable_handle)?;
+
+                let frame_reference = event_args.get_frame_reference()?;
+                let infrared_frame = frame_reference.acquire_frame()?;
+                let frame_description = infrared_frame.get_frame_description()?;
+                let width = frame_description.get_width()?;
+                let height = frame_description.get_height()?;
+                let relative_time = frame_reference.get_relative_time()?;
+                let bytes_per_pixel = frame_description.get_bytes_per_pixel()?;
+                assert_eq!(width, 512);
+                assert_eq!(height, 424);
+                assert!(relative_time > 0);
+                assert_eq!(bytes_per_pixel, 2);
+
+                let capacity = (width * height) as u32;
+                let mut frame_data: Vec<u16> = vec![0; capacity as usize];
+                infrared_frame.copy_frame_data_to_array(capacity, frame_data.as_mut_ptr())?;
+                println!(
+                    "Infrared frame dimensions: {}x{}, time: {}, data length: {}",
+                    width,
+                    height,
+                    relative_time,
+                    frame_data.len()
+                );
+
+                frame_count += 1;
+                if frame_count > 10 {
+                    break; // Exit after processing 10 frames
+                }
+            } else if result == WAIT_TIMEOUT {
+                println!("No new infrared frame available, waiting...");
+            } else {
+                return Err(anyhow::anyhow!(
+                    "WaitForSingleObject failed with result: {:?}",
+                    result
+                ));
+            }
+        }
+
+        Ok(())
+    }
+}
