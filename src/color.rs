@@ -7,7 +7,7 @@ use crate::{
     bindings::{
         BOOLEAN, ColorImageFormat, IColorCameraSettings, IColorFrame, IColorFrameArrivedEventArgs,
         IColorFrameReader, IColorFrameReference, IColorFrameSource, IFrameCapturedEventArgs,
-        IFrameDescription, TIMESPAN, WAITABLE_HANDLE,
+        IFrameDescription, IKinectSensor, TIMESPAN, WAITABLE_HANDLE,
     },
     frame::{FrameCapturedEventArgs, FrameDescription},
     kinect::KinectSensor,
@@ -653,7 +653,7 @@ impl ColorFrameSource {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_KinectSensor.ok_or(E_FAIL)?;
-        let mut sensor_ptr: *mut crate::bindings::IKinectSensor = ptr::null_mut();
+        let mut sensor_ptr: *mut IKinectSensor = ptr::null_mut();
         let hr = unsafe { get_fn(self.ptr, &mut sensor_ptr) };
         if hr.is_ok() {
             Ok(KinectSensor::new(sensor_ptr))

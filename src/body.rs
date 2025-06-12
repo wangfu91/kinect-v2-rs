@@ -1,7 +1,8 @@
 use crate::bindings::{
-    BOOLEAN, DetectionResult, HandState, IBody, IBodyFrame, IBodyFrameReader, IBodyFrameReference,
-    IBodyFrameSource, IBodyHandPair, IFrameCapturedEventArgs, IKinectSensor, INT32, Joint,
-    JointOrientation, TIMESPAN, TrackingConfidence, UINT, ULONG, WAITABLE_HANDLE,
+    BOOLEAN, DetectionResult, HandState, IBody, IBodyFrame, IBodyFrameArrivedEventArgs,
+    IBodyFrameReader, IBodyFrameReference, IBodyFrameSource, IBodyHandPair,
+    IFrameCapturedEventArgs, IKinectSensor, INT32, Joint, JointOrientation, TIMESPAN,
+    TrackingConfidence, UINT, ULONG, WAITABLE_HANDLE,
 };
 use crate::frame::FrameCapturedEventArgs;
 use crate::kinect::KinectSensor;
@@ -671,7 +672,7 @@ impl BodyFrameReader {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.GetFrameArrivedEventData.ok_or(E_FAIL)?;
-        let mut event_data_ptr: *mut crate::bindings::IBodyFrameArrivedEventArgs = ptr::null_mut();
+        let mut event_data_ptr: *mut IBodyFrameArrivedEventArgs = ptr::null_mut();
         let hr = unsafe { get_fn(self.ptr, handle, &mut event_data_ptr) };
         if hr.is_ok() {
             if event_data_ptr.is_null() {
@@ -770,10 +771,7 @@ impl BodyFrame {
         }
     }
 
-    pub fn get_and_refresh_body_data(
-        &self,
-        bodies: &mut [*mut crate::bindings::IBody],
-    ) -> Result<(), Error> {
+    pub fn get_and_refresh_body_data(&self, bodies: &mut [*mut IBody]) -> Result<(), Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
@@ -837,11 +835,11 @@ impl Drop for BodyFrame {
 }
 
 pub struct BodyFrameArrivedEventArgs {
-    ptr: *mut crate::bindings::IBodyFrameArrivedEventArgs,
+    ptr: *mut IBodyFrameArrivedEventArgs,
 }
 
 impl BodyFrameArrivedEventArgs {
-    pub(crate) fn new(ptr: *mut crate::bindings::IBodyFrameArrivedEventArgs) -> Self {
+    pub(crate) fn new(ptr: *mut IBodyFrameArrivedEventArgs) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
@@ -852,7 +850,7 @@ impl BodyFrameArrivedEventArgs {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_FrameReference.ok_or(E_FAIL)?;
-        let mut frame_ref_ptr: *mut crate::bindings::IBodyFrameReference = ptr::null_mut();
+        let mut frame_ref_ptr: *mut IBodyFrameReference = ptr::null_mut();
         let hr = unsafe { get_fn(self.ptr, &mut frame_ref_ptr) };
         if hr.is_ok() {
             if frame_ref_ptr.is_null() {

@@ -1,7 +1,7 @@
 use crate::bindings::{
-    BOOLEAN, IBodyIndexFrame, IBodyIndexFrameReader, IBodyIndexFrameReference,
-    IBodyIndexFrameSource, IFrameCapturedEventArgs, IFrameDescription, IKinectSensor, TIMESPAN,
-    WAITABLE_HANDLE,
+    BOOLEAN, BYTE, IBodyIndexFrame, IBodyIndexFrameArrivedEventArgs, IBodyIndexFrameReader,
+    IBodyIndexFrameReference, IBodyIndexFrameSource, IFrameCapturedEventArgs, IFrameDescription,
+    IKinectSensor, TIMESPAN, UINT, WAITABLE_HANDLE,
 };
 use crate::frame::{FrameCapturedEventArgs, FrameDescription};
 use crate::kinect::KinectSensor;
@@ -77,8 +77,7 @@ impl BodyIndexFrameReader {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.GetFrameArrivedEventData.ok_or(E_FAIL)?;
-        let mut event_data_ptr: *mut crate::bindings::IBodyIndexFrameArrivedEventArgs =
-            ptr::null_mut();
+        let mut event_data_ptr: *mut IBodyIndexFrameArrivedEventArgs = ptr::null_mut();
         let hr = unsafe { get_fn(self.ptr, handle, &mut event_data_ptr) };
         if hr.is_ok() {
             if event_data_ptr.is_null() {
@@ -168,7 +167,7 @@ impl BodyIndexFrame {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let copy_fn = vtbl.CopyFrameDataToArray.ok_or(E_FAIL)?;
-        let capacity = frame_data.len() as crate::bindings::UINT;
+        let capacity = frame_data.len() as UINT;
         let hr = unsafe { copy_fn(self.ptr, capacity, frame_data.as_mut_ptr()) };
         if hr.is_ok() {
             Ok(())
@@ -182,8 +181,8 @@ impl BodyIndexFrame {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let access_fn = vtbl.AccessUnderlyingBuffer.ok_or(E_FAIL)?;
-        let mut capacity: crate::bindings::UINT = 0;
-        let mut buffer: *mut crate::bindings::BYTE = ptr::null_mut();
+        let mut capacity: UINT = 0;
+        let mut buffer: *mut BYTE = ptr::null_mut();
         let hr = unsafe { access_fn(self.ptr, &mut capacity, &mut buffer) };
         if hr.is_ok() {
             if buffer.is_null() || capacity == 0 {
@@ -469,11 +468,11 @@ impl Drop for BodyIndexFrameSource {
 }
 
 pub struct BodyIndexFrameArrivedEventArgs {
-    ptr: *mut crate::bindings::IBodyIndexFrameArrivedEventArgs,
+    ptr: *mut IBodyIndexFrameArrivedEventArgs,
 }
 
 impl BodyIndexFrameArrivedEventArgs {
-    pub(crate) fn new(ptr: *mut crate::bindings::IBodyIndexFrameArrivedEventArgs) -> Self {
+    pub(crate) fn new(ptr: *mut IBodyIndexFrameArrivedEventArgs) -> Self {
         assert!(!ptr.is_null());
         Self { ptr }
     }
@@ -484,7 +483,7 @@ impl BodyIndexFrameArrivedEventArgs {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_FrameReference.ok_or(E_FAIL)?;
-        let mut frame_ref_ptr: *mut crate::bindings::IBodyIndexFrameReference = ptr::null_mut();
+        let mut frame_ref_ptr: *mut IBodyIndexFrameReference = ptr::null_mut();
         let hr = unsafe { get_fn(self.ptr, &mut frame_ref_ptr) };
         if hr.is_ok() {
             if frame_ref_ptr.is_null() {
