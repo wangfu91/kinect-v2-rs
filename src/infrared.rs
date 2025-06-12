@@ -47,15 +47,13 @@ impl InfraredFrame {
         let hr = unsafe { access_buffer_fn(self.ptr, &mut capacity, &mut buffer) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if buffer.is_null() || capacity == 0 {
+            Err(Error::from(E_POINTER))
         } else {
-            if buffer.is_null() || capacity == 0 {
-                Err(Error::from(E_POINTER))
-            } else {
-                // Create a safe slice from the raw pointer
-                let slice =
-                    unsafe { std::slice::from_raw_parts(buffer as *const u16, capacity as usize) };
-                Ok(slice)
-            }
+            // Create a safe slice from the raw pointer
+            let slice =
+                unsafe { std::slice::from_raw_parts(buffer as *const u16, capacity as usize) };
+            Ok(slice)
         }
     }
 
@@ -103,12 +101,10 @@ impl InfraredFrame {
         let hr = unsafe { get_source_fn(self.ptr, &mut infrared_frame_source_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if infrared_frame_source_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if infrared_frame_source_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(InfraredFrameSource::new(infrared_frame_source_ptr))
-            }
+            Ok(InfraredFrameSource::new(infrared_frame_source_ptr))
         }
     }
 }
@@ -218,12 +214,10 @@ impl InfraredFrameSource {
         let hr = unsafe { open_reader_fn(self.ptr, &mut reader_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if reader_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if reader_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(InfraredFrameReader::new(reader_ptr))
-            }
+            Ok(InfraredFrameReader::new(reader_ptr))
         }
     }
 
@@ -332,12 +326,10 @@ impl InfraredFrameReader {
         let hr = unsafe { get_data_fn(self.ptr, waitable_handle, &mut event_data) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if event_data.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if event_data.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(InfraredFrameArrivedEventArgs::new(event_data))
-            }
+            Ok(InfraredFrameArrivedEventArgs::new(event_data))
         }
     }
 
@@ -351,12 +343,10 @@ impl InfraredFrameReader {
         let hr = unsafe { acquire_fn(self.ptr, &mut frame_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if frame_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if frame_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(InfraredFrame::new(frame_ptr))
-            }
+            Ok(InfraredFrame::new(frame_ptr))
         }
     }
 
@@ -402,12 +392,10 @@ impl InfraredFrameReader {
         let hr = unsafe { get_source_fn(self.ptr, &mut source_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if source_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if source_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(InfraredFrameSource::new(source_ptr))
-            }
+            Ok(InfraredFrameSource::new(source_ptr))
         }
     }
 }
@@ -447,12 +435,10 @@ impl InfraredFrameReference {
         let hr = unsafe { acquire_frame_fn(self.ptr, &mut frame_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if frame_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if frame_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(InfraredFrame::new(frame_ptr))
-            }
+            Ok(InfraredFrame::new(frame_ptr))
         }
     }
 
@@ -507,12 +493,10 @@ impl InfraredFrameArrivedEventArgs {
         let hr = unsafe { get_frame_reference_fn(self.ptr, &mut frame_reference_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if frame_reference_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if frame_reference_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(InfraredFrameReference::new(frame_reference_ptr))
-            }
+            Ok(InfraredFrameReference::new(frame_reference_ptr))
         }
     }
 }

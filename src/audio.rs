@@ -243,12 +243,10 @@ impl AudioBeam {
         let hr = unsafe { get_source_fn(self.ptr, &mut audio_source_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if audio_source_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if audio_source_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(AudioSource::new(audio_source_ptr))
-            }
+            Ok(AudioSource::new(audio_source_ptr))
         }
     }
 
@@ -408,12 +406,10 @@ impl AudioBeamList {
         let hr = unsafe { open_beam_fn(self.ptr, index, &mut audio_beam_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if audio_beam_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if audio_beam_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(AudioBeam::new(audio_beam_ptr))
-            }
+            Ok(AudioBeam::new(audio_beam_ptr))
         }
     }
 }
@@ -468,12 +464,10 @@ impl AudioBeamFrameList {
         let hr = unsafe { open_frame_fn(self.ptr, index, &mut audio_beam_frame_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if audio_beam_frame_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if audio_beam_frame_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(AudioBeamFrame::new(audio_beam_frame_ptr))
-            }
+            Ok(AudioBeamFrame::new(audio_beam_frame_ptr))
         }
     }
 }
@@ -513,12 +507,10 @@ impl AudioBeamFrame {
         let hr = unsafe { get_source_fn(self.ptr, &mut audio_source_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if audio_source_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if audio_source_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(AudioSource::new(audio_source_ptr))
-            }
+            Ok(AudioSource::new(audio_source_ptr))
         }
     }
 
@@ -547,12 +539,10 @@ impl AudioBeamFrame {
         let hr = unsafe { get_beam_fn(self.ptr, &mut audio_beam_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if audio_beam_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if audio_beam_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(AudioBeam::new(audio_beam_ptr))
-            }
+            Ok(AudioBeam::new(audio_beam_ptr))
         }
     }
 
@@ -582,12 +572,10 @@ impl AudioBeamFrame {
             unsafe { get_sub_frame_fn(self.ptr, sub_frame_index, &mut audio_beam_sub_frame_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if audio_beam_sub_frame_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if audio_beam_sub_frame_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(AudioBeamSubFrame::new(audio_beam_sub_frame_ptr))
-            }
+            Ok(AudioBeamSubFrame::new(audio_beam_sub_frame_ptr))
         }
     }
 
@@ -884,12 +872,10 @@ impl AudioBeamFrameReference {
         let hr = unsafe { acquire_frame_fn(self.ptr, &mut audio_beam_frame_list_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if audio_beam_frame_list_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if audio_beam_frame_list_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(AudioBeamFrameList::new(audio_beam_frame_list_ptr))
-            }
+            Ok(AudioBeamFrameList::new(audio_beam_frame_list_ptr))
         }
     }
 
@@ -944,12 +930,10 @@ impl AudioBeamFrameArrivedEventArgs {
         let hr = unsafe { get_frame_fn(self.ptr, &mut audio_beam_frame_reference_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if audio_beam_frame_reference_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if audio_beam_frame_reference_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(AudioBeamFrameReference::new(audio_beam_frame_reference_ptr))
-            }
+            Ok(AudioBeamFrameReference::new(audio_beam_frame_reference_ptr))
         }
     }
 }
@@ -1044,12 +1028,10 @@ impl AudioBeamFrameReader {
         let hr = unsafe { acquire_fn(self.ptr, &mut audio_beam_frame_list_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if audio_beam_frame_list_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if audio_beam_frame_list_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(AudioBeamFrameList::new(audio_beam_frame_list_ptr))
-            }
+            Ok(AudioBeamFrameList::new(audio_beam_frame_list_ptr))
         }
     }
 
@@ -1093,12 +1075,10 @@ impl AudioBeamFrameReader {
         let hr = unsafe { get_source_fn(self.ptr, &mut audio_source_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if audio_source_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if audio_source_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(AudioSource::new(audio_source_ptr))
-            }
+            Ok(AudioSource::new(audio_source_ptr))
         }
     }
 }

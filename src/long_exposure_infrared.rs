@@ -48,15 +48,13 @@ impl LongExposureInfraredFrame {
         let hr = unsafe { access_buffer_fn(self.ptr, &mut capacity, &mut buffer) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if buffer.is_null() || capacity == 0 {
+            Err(Error::from(E_POINTER))
         } else {
-            if buffer.is_null() || capacity == 0 {
-                Err(Error::from(E_POINTER))
-            } else {
-                // Create a safe slice from the raw pointer
-                let slice =
-                    unsafe { std::slice::from_raw_parts(buffer as *const u16, capacity as usize) };
-                Ok(slice)
-            }
+            // Create a safe slice from the raw pointer
+            let slice =
+                unsafe { std::slice::from_raw_parts(buffer as *const u16, capacity as usize) };
+            Ok(slice)
         }
     }
     pub fn get_relative_time(&self) -> Result<TIMESPAN, Error> {
@@ -105,12 +103,10 @@ impl LongExposureInfraredFrame {
         let hr = unsafe { get_source_fn(self.ptr, &mut source_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if source_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if source_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(LongExposureInfraredFrameSource::new(source_ptr))
-            }
+            Ok(LongExposureInfraredFrameSource::new(source_ptr))
         }
     }
 }
@@ -220,12 +216,10 @@ impl LongExposureInfraredFrameSource {
         let hr = unsafe { open_reader_fn(self.ptr, &mut reader_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if reader_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if reader_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(LongExposureInfraredFrameReader::new(reader_ptr))
-            }
+            Ok(LongExposureInfraredFrameReader::new(reader_ptr))
         }
     }
 
@@ -334,12 +328,10 @@ impl LongExposureInfraredFrameReader {
         let hr = unsafe { get_data_fn(self.ptr, waitable_handle, &mut event_data) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if event_data.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if event_data.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(LongExposureInfraredFrameArrivedEventArgs::new(event_data))
-            }
+            Ok(LongExposureInfraredFrameArrivedEventArgs::new(event_data))
         }
     }
 
@@ -353,12 +345,10 @@ impl LongExposureInfraredFrameReader {
         let hr = unsafe { acquire_fn(self.ptr, &mut frame_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if frame_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if frame_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(LongExposureInfraredFrame::new(frame_ptr))
-            }
+            Ok(LongExposureInfraredFrame::new(frame_ptr))
         }
     }
 
@@ -406,12 +396,10 @@ impl LongExposureInfraredFrameReader {
         let hr = unsafe { get_source_fn(self.ptr, &mut source_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if source_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if source_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(LongExposureInfraredFrameSource::new(source_ptr))
-            }
+            Ok(LongExposureInfraredFrameSource::new(source_ptr))
         }
     }
 }
@@ -451,12 +439,10 @@ impl LongExposureInfraredFrameReference {
         let hr = unsafe { acquire_frame_fn(self.ptr, &mut frame_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if frame_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if frame_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(LongExposureInfraredFrame::new(frame_ptr))
-            }
+            Ok(LongExposureInfraredFrame::new(frame_ptr))
         }
     }
 
@@ -511,12 +497,10 @@ impl LongExposureInfraredFrameArrivedEventArgs {
         let hr = unsafe { get_frame_reference_fn(self.ptr, &mut frame_reference_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if frame_reference_ptr.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            if frame_reference_ptr.is_null() {
-                Err(Error::from(E_POINTER))
-            } else {
-                Ok(LongExposureInfraredFrameReference::new(frame_reference_ptr))
-            }
+            Ok(LongExposureInfraredFrameReference::new(frame_reference_ptr))
         }
     }
 }
