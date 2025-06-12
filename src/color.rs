@@ -1,18 +1,19 @@
-use windows::{
-    Win32::Foundation::{E_FAIL, E_POINTER},
-    core::Error,
-};
-
 use crate::{
     bindings::{
-        BOOLEAN, ColorImageFormat, IColorCameraSettings, IColorFrame, IColorFrameArrivedEventArgs,
-        IColorFrameReader, IColorFrameReference, IColorFrameSource, IFrameCapturedEventArgs,
-        IFrameDescription, IKinectSensor, TIMESPAN, WAITABLE_HANDLE,
+        BOOLEAN, IColorCameraSettings, IColorFrame, IColorFrameArrivedEventArgs, IColorFrameReader,
+        IColorFrameReference, IColorFrameSource, IFrameCapturedEventArgs, IFrameDescription,
+        IKinectSensor, TIMESPAN, WAITABLE_HANDLE,
     },
     frame::{FrameCapturedEventArgs, FrameDescription},
     kinect::KinectSensor,
 };
 use std::ptr;
+use windows::{
+    Win32::Foundation::{E_FAIL, E_POINTER},
+    core::Error,
+};
+
+pub use crate::bindings::ColorImageFormat;
 
 pub struct ColorFrame {
     ptr: *mut IColorFrame,

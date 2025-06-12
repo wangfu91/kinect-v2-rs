@@ -13,3 +13,5 @@ pub mod multi_source_frame;
 pub mod utils;
 
 pub const FRAME_WAIT_TIMEOUT_MS: u32 = 100;
+
+pub use crate::bindings::WAITABLE_HANDLE;
