@@ -176,8 +176,7 @@ impl BodyIndexFrame {
             Err(Error::from_hresult(hr))
         }
     }
-
-    pub fn access_underlying_buffer(&self) -> Result<(*mut u8, u32), Error> {
+    pub fn access_underlying_buffer(&self) -> Result<&[u8], Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
@@ -187,7 +186,14 @@ impl BodyIndexFrame {
         let mut buffer: *mut crate::bindings::BYTE = ptr::null_mut();
         let hr = unsafe { access_fn(self.ptr, &mut capacity, &mut buffer) };
         if hr.is_ok() {
-            Ok((buffer, capacity))
+            if buffer.is_null() || capacity == 0 {
+                Err(Error::from_hresult(E_POINTER))
+            } else {
+                // Create a safe slice from the raw pointer
+                let slice =
+                    unsafe { std::slice::from_raw_parts(buffer as *const u8, capacity as usize) };
+                Ok(slice)
+            }
         } else {
             Err(Error::from_hresult(hr))
         }
