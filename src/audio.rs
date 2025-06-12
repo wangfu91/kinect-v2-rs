@@ -10,7 +10,7 @@ use crate::kinect::KinectSensor;
 use std::ptr;
 use windows::Win32::Foundation::{E_FAIL, E_POINTER, HANDLE};
 use windows::Win32::System::Com::IStream;
-use windows::core::Error;
+use windows::core::{Error, Interface};
 
 pub struct AudioSource {
     ptr: *mut IAudioSource,
@@ -324,8 +324,7 @@ impl AudioBeam {
             Ok(beam_angle_confidence)
         }
     }
-
-    pub fn open_input_stream(&self) -> Result<*mut IStream, Error> {
+    pub fn open_input_stream(&self) -> Result<IStream, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -335,8 +334,13 @@ impl AudioBeam {
         let hr = unsafe { open_stream_fn(self.ptr, &mut stream) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if stream.is_null() {
+            Err(Error::from(E_POINTER))
         } else {
-            Ok(stream)
+            // Create a safe IStream interface from the raw pointer
+            // The Windows crate handles COM reference counting automatically
+            // SAFETY: The raw pointer was just created by the COM API and is guaranteed to be valid
+            unsafe { Ok(IStream::from_raw(stream as *mut std::ffi::c_void)) }
         }
     }
 
@@ -1105,9 +1109,8 @@ mod tests {
 
     use crate::{FRAME_WAIT_TIMEOUT_MS, kinect};
 
-    use super::*;
     use windows::Win32::{
-        Foundation::{E_POINTER, WAIT_OBJECT_0, WAIT_TIMEOUT},
+        Foundation::{WAIT_OBJECT_0, WAIT_TIMEOUT},
         System::{Com::Urlmon::E_PENDING, Threading::WaitForSingleObject},
     };
 
