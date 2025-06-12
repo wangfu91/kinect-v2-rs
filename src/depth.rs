@@ -416,26 +416,21 @@ impl DepthFrame {
         assert!(!ptr.is_null());
         Self { ptr }
     }
-
-    pub fn copy_frame_data_to_array(
-        &self,
-        capacity: UINT,
-        frame_data: *mut UINT16,
-    ) -> Result<(), Error> {
+    pub fn copy_frame_data_to_array(&self, frame_data: &mut [u16]) -> Result<(), Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let copy_fn = vtbl.CopyFrameDataToArray.ok_or(E_FAIL)?;
-        let hr = unsafe { copy_fn(self.ptr, capacity, frame_data) };
+        let capacity = frame_data.len() as UINT;
+        let hr = unsafe { copy_fn(self.ptr, capacity, frame_data.as_mut_ptr()) };
         if hr.is_ok() {
             Ok(())
         } else {
             Err(Error::from_hresult(hr))
         }
     }
-
-    pub fn access_underlying_buffer(&self) -> Result<(UINT, *mut UINT16), Error> {
+    pub fn access_underlying_buffer(&self) -> Result<&[u16], Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
@@ -445,7 +440,14 @@ impl DepthFrame {
         let mut buffer: *mut UINT16 = ptr::null_mut();
         let hr = unsafe { access_fn(self.ptr, &mut capacity, &mut buffer) };
         if hr.is_ok() {
-            Ok((capacity, buffer))
+            if buffer.is_null() || capacity == 0 {
+                Err(Error::from_hresult(E_POINTER))
+            } else {
+                // Create a safe slice from the raw pointer
+                let slice =
+                    unsafe { std::slice::from_raw_parts(buffer as *const u16, capacity as usize) };
+                Ok(slice)
+            }
         } else {
             Err(Error::from_hresult(hr))
         }
@@ -623,14 +625,12 @@ mod tests {
                 assert_eq!(width, 512);
                 assert_eq!(height, 424);
                 assert!(rel_time > 0);
-                assert_eq!(bytes_per_pixel, 2);
-
-                // The capacity for CopyFrameDataToArray is the number of UINT16 elements.
+                assert_eq!(bytes_per_pixel, 2); // The capacity for CopyFrameDataToArray is the number of UINT16 elements.
                 // A depth frame consists of width * height pixels, where each pixel is a UINT16.
                 let capacity = width * height;
                 let mut frame_data: Vec<u16> = vec![0; capacity as usize];
                 depth_frame
-                    .copy_frame_data_to_array(capacity, frame_data.as_mut_ptr())
+                    .copy_frame_data_to_array(&mut frame_data)
                     .context("Failed to copy depth frame data to array")?;
                 println!("depth frame data len: {:?}", frame_data.len());
 

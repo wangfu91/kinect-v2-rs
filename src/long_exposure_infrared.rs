@@ -19,12 +19,7 @@ impl LongExposureInfraredFrame {
         assert!(!ptr.is_null());
         Self { ptr }
     }
-
-    pub fn copy_frame_data_to_array(
-        &self,
-        capacity: UINT,
-        frame_data: *mut UINT16,
-    ) -> Result<(), Error> {
+    pub fn copy_frame_data_to_array(&self, frame_data: &mut [u16]) -> Result<(), Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -32,15 +27,15 @@ impl LongExposureInfraredFrame {
         let copy_data_fn = vtbl
             .CopyFrameDataToArray
             .ok_or_else(|| Error::from(E_FAIL))?;
-        let hr = unsafe { copy_data_fn(self.ptr, capacity, frame_data) };
+        let capacity = frame_data.len() as UINT;
+        let hr = unsafe { copy_data_fn(self.ptr, capacity, frame_data.as_mut_ptr()) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
             Ok(())
         }
     }
-
-    pub fn access_underlying_buffer(&self) -> Result<(UINT, *mut UINT16), Error> {
+    pub fn access_underlying_buffer(&self) -> Result<&[u16], Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -54,7 +49,14 @@ impl LongExposureInfraredFrame {
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
-            Ok((capacity, buffer))
+            if buffer.is_null() || capacity == 0 {
+                Err(Error::from(E_POINTER))
+            } else {
+                // Create a safe slice from the raw pointer
+                let slice =
+                    unsafe { std::slice::from_raw_parts(buffer as *const u16, capacity as usize) };
+                Ok(slice)
+            }
         }
     }
     pub fn get_relative_time(&self) -> Result<TIMESPAN, Error> {

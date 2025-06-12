@@ -18,12 +18,7 @@ impl InfraredFrame {
         assert!(!ptr.is_null());
         Self { ptr }
     }
-
-    pub fn copy_frame_data_to_array(
-        &self,
-        capacity: UINT,
-        frame_data: *mut UINT16,
-    ) -> Result<(), Error> {
+    pub fn copy_frame_data_to_array(&self, frame_data: &mut [u16]) -> Result<(), Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -31,15 +26,15 @@ impl InfraredFrame {
         let copy_data_fn = vtbl
             .CopyFrameDataToArray
             .ok_or_else(|| Error::from(E_FAIL))?;
-        let hr = unsafe { copy_data_fn(self.ptr, capacity, frame_data) };
+        let capacity = frame_data.len() as UINT;
+        let hr = unsafe { copy_data_fn(self.ptr, capacity, frame_data.as_mut_ptr()) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
             Ok(())
         }
     }
-
-    pub fn access_underlying_buffer(&self) -> Result<(UINT, *mut UINT16), Error> {
+    pub fn access_underlying_buffer(&self) -> Result<&[u16], Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -53,7 +48,14 @@ impl InfraredFrame {
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
-            Ok((capacity, buffer))
+            if buffer.is_null() || capacity == 0 {
+                Err(Error::from(E_POINTER))
+            } else {
+                // Create a safe slice from the raw pointer
+                let slice =
+                    unsafe { std::slice::from_raw_parts(buffer as *const u16, capacity as usize) };
+                Ok(slice)
+            }
         }
     }
 
@@ -605,10 +607,9 @@ mod tests {
                 assert_eq!(height, 424);
                 assert!(relative_time > 0);
                 assert_eq!(bytes_per_pixel, 2);
-
                 let capacity = (width * height) as u32;
                 let mut frame_data: Vec<u16> = vec![0; capacity as usize];
-                infrared_frame.copy_frame_data_to_array(capacity, frame_data.as_mut_ptr())?;
+                infrared_frame.copy_frame_data_to_array(&mut frame_data)?;
                 println!(
                     "Infrared frame dimensions: {}x{}, time: {}, data length: {}",
                     width,
