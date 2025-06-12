@@ -53,47 +53,45 @@ impl ColorFrame {
             Err(Error::from_hresult(hr))
         }
     }
-
-    pub fn copy_raw_frame_data_to_array(
-        &self,
-        capacity: u32,
-        frame_data: *mut u8,
-    ) -> Result<(), Error> {
+    pub fn copy_raw_frame_data_to_array(&self, frame_data: &mut [u8]) -> Result<(), Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let copy_fn = vtbl.CopyRawFrameDataToArray.ok_or(E_FAIL)?;
-        let hr = unsafe { copy_fn(self.ptr, capacity, frame_data) };
+        let capacity = frame_data.len() as u32;
+        let hr = unsafe { copy_fn(self.ptr, capacity, frame_data.as_mut_ptr()) };
         if hr.is_ok() {
             Ok(())
         } else {
             Err(Error::from_hresult(hr))
         }
     }
-
-    pub fn access_raw_underlying_buffer(
-        &self,
-        capacity: &mut u32,
-        buffer: &mut *mut u8,
-    ) -> Result<(), Error> {
+    pub fn access_raw_underlying_buffer(&self) -> Result<&[u8], Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let access_fn = vtbl.AccessRawUnderlyingBuffer.ok_or(E_FAIL)?;
-        let hr = unsafe { access_fn(self.ptr, capacity, buffer) };
+        let mut capacity: u32 = 0;
+        let mut buffer: *mut u8 = ptr::null_mut();
+        let hr = unsafe { access_fn(self.ptr, &mut capacity, &mut buffer) };
         if hr.is_ok() {
-            Ok(())
+            if buffer.is_null() || capacity == 0 {
+                Err(Error::from_hresult(E_POINTER))
+            } else {
+                // Create a safe slice from the raw pointer
+                let slice =
+                    unsafe { std::slice::from_raw_parts(buffer as *const u8, capacity as usize) };
+                Ok(slice)
+            }
         } else {
             Err(Error::from_hresult(hr))
         }
     }
-
     pub fn copy_converted_frame_data_to_array(
         &self,
-        capacity: u32,
-        frame_data: *mut u8,
+        frame_data: &mut [u8],
         color_format: ColorImageFormat,
     ) -> Result<(), Error> {
         if self.ptr.is_null() {
@@ -101,7 +99,8 @@ impl ColorFrame {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let copy_fn = vtbl.CopyConvertedFrameDataToArray.ok_or(E_FAIL)?;
-        let hr = unsafe { copy_fn(self.ptr, capacity, frame_data, color_format) };
+        let capacity = frame_data.len() as u32;
+        let hr = unsafe { copy_fn(self.ptr, capacity, frame_data.as_mut_ptr(), color_format) };
         if hr.is_ok() {
             Ok(())
         } else {
@@ -762,13 +761,12 @@ mod tests {
                 assert_eq!(height, 1080);
                 assert!(rel_time > 0);
                 assert_eq!(bytes_per_pixel, 2);
-
                 let image_format = color_frame.get_raw_color_image_format()?;
                 println!("Color image format: {:?}", image_format);
                 let capacity = width * height * bytes_per_pixel;
                 let mut frame_data: Vec<u8> = vec![0; capacity as usize];
                 color_frame
-                    .copy_raw_frame_data_to_array(capacity, frame_data.as_mut_ptr())
+                    .copy_raw_frame_data_to_array(&mut frame_data)
                     .context("Failed to copy raw frame data to array")?;
                 println!("frame_data.len: {:?}", frame_data.len());
 
