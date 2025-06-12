@@ -747,7 +747,7 @@ impl AudioBeamSubFrame {
         }
     }
 
-    pub fn copy_frame_data_to_array(&self, capacity: UINT, buffer: *mut BYTE) -> Result<(), Error> {
+    pub fn copy_frame_data_to_array(&self, buffer: &mut [u8]) -> Result<(), Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -755,7 +755,11 @@ impl AudioBeamSubFrame {
         let copy_data_fn = vtbl
             .CopyFrameDataToArray
             .ok_or_else(|| Error::from(E_FAIL))?;
-        let hr = unsafe { copy_data_fn(self.ptr, capacity, buffer) };
+
+        let capacity = buffer.len() as UINT;
+        let buffer_ptr = buffer.as_mut_ptr() as *mut BYTE;
+
+        let hr = unsafe { copy_data_fn(self.ptr, capacity, buffer_ptr) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
         } else {
@@ -763,7 +767,7 @@ impl AudioBeamSubFrame {
         }
     }
 
-    pub fn access_underlying_buffer(&self) -> Result<(*mut UINT, *mut *mut BYTE), Error> {
+    pub fn access_underlying_buffer(&self) -> Result<&[u8], Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -771,13 +775,20 @@ impl AudioBeamSubFrame {
         let access_buffer_fn = vtbl
             .AccessUnderlyingBuffer
             .ok_or_else(|| Error::from(E_FAIL))?;
+
         let mut capacity: UINT = 0;
         let mut buffer: *mut BYTE = ptr::null_mut();
         let hr = unsafe { access_buffer_fn(self.ptr, &mut capacity, &mut buffer) };
+
         if hr.is_err() {
             Err(Error::from_hresult(hr))
+        } else if buffer.is_null() || capacity == 0 {
+            Err(Error::from(E_POINTER))
         } else {
-            Ok((&mut capacity as *mut UINT, &mut buffer as *mut *mut BYTE))
+            // Create a safe slice from the raw pointer
+            let slice =
+                unsafe { std::slice::from_raw_parts(buffer as *const u8, capacity as usize) };
+            Ok(slice)
         }
     }
 
@@ -863,7 +874,7 @@ impl AudioBeamFrameReference {
         Self { ptr }
     }
 
-    pub fn get_audio_beam_frame(&self) -> Result<AudioBeamFrameList, Error> {
+    pub fn acquire_beam_frame(&self) -> Result<AudioBeamFrameList, Error> {
         if self.ptr.is_null() {
             return Err(Error::from(E_POINTER));
         }
@@ -1104,5 +1115,185 @@ impl Drop for AudioBeamFrameReader {
             }
             self.ptr = ptr::null_mut();
         }
+    }
+}
+
+// tests
+#[cfg(test)]
+mod tests {
+    use std::{thread, time::Duration};
+
+    use crate::{FRAME_WAIT_TIMEOUT_MS, kinect};
+
+    use super::*;
+    use windows::Win32::{
+        Foundation::{E_POINTER, WAIT_OBJECT_0, WAIT_TIMEOUT},
+        System::{Com::Urlmon::E_PENDING, Threading::WaitForSingleObject},
+    };
+
+    #[test]
+    fn get_latest_audio_frame() -> anyhow::Result<()> {
+        let kinect = kinect::get_default_kinect_sensor()?;
+        kinect.open()?;
+        let audio_source = kinect.audio_source()?;
+        let audio_beam_frame_reader = audio_source.open_reader()?;
+
+        let mut frame_counter = 0;
+        loop {
+            match audio_beam_frame_reader.acquire_latest_beam_frames() {
+                Ok(frame_list) => {
+                    let beam_count = frame_list.get_beam_count()?;
+                    assert_eq!(beam_count, 1, "Expected only 1 audio beam");
+
+                    let audio_beam_frame = frame_list.open_audio_beam_frame(0)?;
+                    let duration = audio_beam_frame.get_duration()?;
+                    let sub_frame_count = audio_beam_frame.get_sub_frame_count()?;
+                    let audio_beam = audio_beam_frame.get_audio_beam()?;
+                    let beam_angle = audio_beam.get_beam_angle()?;
+                    let beam_angle_confidence = audio_beam.get_beam_angle_confidence()?;
+                    let relative_time = audio_beam.get_relative_time()?;
+
+                    println!(
+                        "AudioFrame Duration: {}, SubFrameCount:{}, Beam Angle: {}, Confidence: {}, Relative Time: {}",
+                        duration, sub_frame_count, beam_angle, beam_angle_confidence, relative_time
+                    );
+
+                    assert!(
+                        sub_frame_count >= 1,
+                        "Expected at least 1 sub-frame in audio beam frame"
+                    );
+                    assert!(
+                        beam_angle >= -180.0 && beam_angle <= 180.0,
+                        "Beam angle out of range"
+                    );
+                    assert!(
+                        beam_angle_confidence >= 0.0 && beam_angle_confidence <= 1.0,
+                        "Beam angle confidence out of range"
+                    );
+                    assert!(relative_time >= 0, "Relative time should be non-negative");
+
+                    frame_counter += 1;
+                    if frame_counter >= 10 {
+                        break; // Limit to 10 frames for testing
+                    }
+                }
+                Err(e) => {
+                    if e.code() == E_PENDING.into() {
+                        println!("Audio frame not ready yet, waiting...");
+                        // If the frame is not ready yet, wait and try again
+                        thread::sleep(Duration::from_millis(100));
+                    } else {
+                        // If it's a different error, return it
+                        return Err(anyhow::Error::new(e));
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn subscribe_audio_frame_arrived_event() -> anyhow::Result<()> {
+        let kinect = kinect::get_default_kinect_sensor()?;
+        kinect.open()?;
+        let audio_source = kinect.audio_source()?;
+        let audio_frame_reader = audio_source.open_reader()?;
+        let waitable_handle = audio_frame_reader.subscribe_frame_arrived()?;
+        let is_active = audio_source.get_is_active()?;
+        assert!(is_active, "Audio source should be active");
+
+        let mut frame_counter = 0;
+        loop {
+            let wait_result =
+                unsafe { WaitForSingleObject(waitable_handle, FRAME_WAIT_TIMEOUT_MS) };
+            if WAIT_OBJECT_0 == wait_result {
+                let event_args =
+                    audio_frame_reader.get_frame_arrived_event_data(waitable_handle)?;
+
+                let frame_reference = event_args.get_frame_reference()?;
+                let frame_list = frame_reference.acquire_beam_frame()?;
+                let beam_count = frame_list.get_beam_count()?;
+                assert_eq!(beam_count, 1, "Expected only 1 audio beam");
+
+                let audio_beam_frame = frame_list.open_audio_beam_frame(0)?;
+                let duration = audio_beam_frame.get_duration()?;
+                let sub_frame_count = audio_beam_frame.get_sub_frame_count()?;
+                let audio_beam = audio_beam_frame.get_audio_beam()?;
+                let beam_mode = audio_beam.get_audio_beam_mode()?;
+                let beam_angle = audio_beam.get_beam_angle()?;
+                let beam_angle_confidence = audio_beam.get_beam_angle_confidence()?;
+                let relative_time = audio_beam.get_relative_time()?;
+
+                println!(
+                    "AudioFrame Duration ticks: {}, SubFrameCount:{}, Beam Mode: {:?}, Beam Angle: {}, Confidence: {}, Relative Time: {}",
+                    duration,
+                    sub_frame_count,
+                    beam_mode,
+                    beam_angle,
+                    beam_angle_confidence,
+                    relative_time
+                );
+
+                assert!(
+                    sub_frame_count >= 1,
+                    "Expected at least 1 sub-frame in audio beam frame"
+                );
+                assert!(
+                    beam_angle >= -180.0 && beam_angle <= 180.0,
+                    "Beam angle out of range"
+                );
+                assert!(
+                    beam_angle_confidence >= 0.0 && beam_angle_confidence <= 1.0,
+                    "Beam angle confidence out of range"
+                );
+                assert!(relative_time >= 0, "Relative time should be non-negative");
+
+                for i in 0..sub_frame_count {
+                    let sub_frame = audio_beam_frame.get_sub_frame(i)?;
+                    let sub_frame_duration = sub_frame.get_duration()?;
+                    assert!(
+                        sub_frame_duration > 0,
+                        "Sub-frame duration should be positive"
+                    );
+
+                    let sub_frame_bytes = sub_frame.get_frame_length_in_bytes()?;
+                    assert!(
+                        sub_frame_bytes > 0,
+                        "Sub-frame length in bytes should be positive"
+                    );
+
+                    let sub_frame_data = sub_frame.access_underlying_buffer()?;
+                    assert!(
+                        !sub_frame_data.is_empty(),
+                        "Sub-frame data should not be empty"
+                    );
+                    println!(
+                        "SubFrame {}: Duration ticks: {}, Length: {}, Data Size: {} bytes",
+                        i,
+                        sub_frame_duration,
+                        sub_frame_bytes,
+                        sub_frame_data.len()
+                    );
+                }
+
+                frame_counter += 1;
+                if frame_counter >= 10 {
+                    break; // Limit to 10 frames for testing
+                }
+            } else if WAIT_TIMEOUT == wait_result {
+                println!("No new audio frame available, waiting...");
+            } else {
+                return Err(anyhow::anyhow!(
+                    "WaitForSingleObject failed with result: {:?}",
+                    wait_result
+                ));
+            }
+        }
+
+        // Unsubscribe from the event
+        audio_frame_reader.unsubscribe_frame_arrived(waitable_handle)?;
+
+        Ok(())
     }
 }
