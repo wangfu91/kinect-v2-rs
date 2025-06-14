@@ -549,7 +549,7 @@ impl Drop for DepthFrame {
 mod tests {
     use std::{thread, time::Duration};
 
-    use crate::{FRAME_WAIT_TIMEOUT_MS, kinect};
+    use crate::{DEFAULT_FRAME_WAIT_TIMEOUT_MS, kinect};
     use anyhow::Context;
     use windows::Win32::{
         Foundation::{WAIT_OBJECT_0, WAIT_TIMEOUT},
@@ -610,7 +610,8 @@ mod tests {
         assert!(is_active, "Depth frame source should be active");
 
         loop {
-            let result = unsafe { WaitForSingleObject(waitable_handle, FRAME_WAIT_TIMEOUT_MS) };
+            let result =
+                unsafe { WaitForSingleObject(waitable_handle, DEFAULT_FRAME_WAIT_TIMEOUT_MS) };
             if result == WAIT_OBJECT_0 {
                 let event_args =
                     depth_frame_reader.get_frame_arrived_event_data(waitable_handle)?;

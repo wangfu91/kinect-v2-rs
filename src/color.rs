@@ -688,7 +688,7 @@ mod tests {
     use std::{thread, time::Duration};
 
     use super::*;
-    use crate::{FRAME_WAIT_TIMEOUT_MS, kinect};
+    use crate::{DEFAULT_FRAME_WAIT_TIMEOUT_MS, kinect};
     use anyhow::Context;
     use windows::Win32::{
         Foundation::{WAIT_OBJECT_0, WAIT_TIMEOUT},
@@ -744,7 +744,8 @@ mod tests {
         let is_active = color_frame_source.get_is_active()?;
         assert!(is_active, "Color frame source should be active");
         loop {
-            let result = unsafe { WaitForSingleObject(waitable_handle, FRAME_WAIT_TIMEOUT_MS) };
+            let result =
+                unsafe { WaitForSingleObject(waitable_handle, DEFAULT_FRAME_WAIT_TIMEOUT_MS) };
             if WAIT_OBJECT_0 == result {
                 let event_args = color_frame_reader
                     .get_frame_arrived_event_data(waitable_handle)
