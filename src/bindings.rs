@@ -7,6 +7,8 @@
 #![allow(unsafe_op_in_unsafe_fn)]
 #![allow(unused_imports)]
 
+use std::ops::BitOr;
+
 use windows::Win32::System::Com::IStream;
 pub use windows::core::HRESULT;
 pub type HANDLE = windows::Win32::Foundation::HANDLE;
@@ -192,6 +194,31 @@ pub enum FrameSourceTypes {
     Body = 32,
     Audio = 64,
 }
+
+impl From<i32> for FrameSourceTypes {
+    fn from(value: i32) -> Self {
+        match value {
+            0 => FrameSourceTypes::None,
+            1 => FrameSourceTypes::Color,
+            2 => FrameSourceTypes::Infrared,
+            4 => FrameSourceTypes::LongExposureInfrared,
+            8 => FrameSourceTypes::Depth,
+            16 => FrameSourceTypes::BodyIndex,
+            32 => FrameSourceTypes::Body,
+            64 => FrameSourceTypes::Audio,
+            _ => FrameSourceTypes::None, // fallback for unknown bits
+        }
+    }
+}
+
+impl BitOr for FrameSourceTypes {
+    type Output = FrameSourceTypes;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        FrameSourceTypes::from(self as i32 | rhs as i32)
+    }
+}
+
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum ColorImageFormat {
@@ -332,7 +359,7 @@ const _: () = {
     ["Offset of field: Vector4::w"][::std::mem::offset_of!(Vector4, w) - 12usize];
 };
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct PointF {
     pub X: f32,
     pub Y: f32,
@@ -345,7 +372,7 @@ const _: () = {
     ["Offset of field: PointF::Y"][::std::mem::offset_of!(PointF, Y) - 4usize];
 };
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct RectF {
     pub X: f32,
     pub Y: f32,
@@ -388,7 +415,7 @@ const _: () = {
     ["Offset of field: DepthSpacePoint::Y"][::std::mem::offset_of!(DepthSpacePoint, Y) - 4usize];
 };
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct CameraSpacePoint {
     pub X: f32,
     pub Y: f32,
@@ -2623,7 +2650,7 @@ pub struct IBodyVtbl {
         unsafe extern "C" fn(This: *mut IBody, confidence: *mut TrackingConfidence) -> HRESULT,
     >,
     pub get_ClippedEdges: ::std::option::Option<
-        unsafe extern "C" fn(This: *mut IBody, clippedEdges: *mut ULONG) -> HRESULT,
+        unsafe extern "C" fn(This: *mut IBody, clippedEdges: *mut FrameEdges) -> HRESULT,
     >,
     pub get_TrackingId: ::std::option::Option<
         unsafe extern "C" fn(This: *mut IBody, trackingId: *mut UINT64) -> HRESULT,
