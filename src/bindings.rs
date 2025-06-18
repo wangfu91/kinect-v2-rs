@@ -167,7 +167,8 @@ impl Default for IPropertyChangedEventArgs {
         unsafe {
             ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
             s.assume_init()
-        }    }
+        }
+    }
 }
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -315,7 +316,7 @@ pub enum KinectAudioCalibrationState {
 }
 #[repr(C)]
 #[derive(Debug, Default)]
-pub struct _Vector4 {
+pub struct Vector4 {
     pub x: f32,
     pub y: f32,
     pub z: f32,
@@ -323,31 +324,29 @@ pub struct _Vector4 {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _Vector4"][::std::mem::size_of::<_Vector4>() - 16usize];
-    ["Alignment of _Vector4"][::std::mem::align_of::<_Vector4>() - 4usize];
-    ["Offset of field: _Vector4::x"][::std::mem::offset_of!(_Vector4, x) - 0usize];
-    ["Offset of field: _Vector4::y"][::std::mem::offset_of!(_Vector4, y) - 4usize];
-    ["Offset of field: _Vector4::z"][::std::mem::offset_of!(_Vector4, z) - 8usize];
-    ["Offset of field: _Vector4::w"][::std::mem::offset_of!(_Vector4, w) - 12usize];
+    ["Size of Vector4"][::std::mem::size_of::<Vector4>() - 16usize];
+    ["Alignment of Vector4"][::std::mem::align_of::<Vector4>() - 4usize];
+    ["Offset of field: Vector4::x"][::std::mem::offset_of!(Vector4, x) - 0usize];
+    ["Offset of field: Vector4::y"][::std::mem::offset_of!(Vector4, y) - 4usize];
+    ["Offset of field: Vector4::z"][::std::mem::offset_of!(Vector4, z) - 8usize];
+    ["Offset of field: Vector4::w"][::std::mem::offset_of!(Vector4, w) - 12usize];
 };
-pub type Vector4 = _Vector4;
 #[repr(C)]
 #[derive(Debug, Default)]
-pub struct _PointF {
+pub struct PointF {
     pub X: f32,
     pub Y: f32,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _PointF"][::std::mem::size_of::<_PointF>() - 8usize];
-    ["Alignment of _PointF"][::std::mem::align_of::<_PointF>() - 4usize];
-    ["Offset of field: _PointF::X"][::std::mem::offset_of!(_PointF, X) - 0usize];
-    ["Offset of field: _PointF::Y"][::std::mem::offset_of!(_PointF, Y) - 4usize];
+    ["Size of PointF"][::std::mem::size_of::<PointF>() - 8usize];
+    ["Alignment of PointF"][::std::mem::align_of::<PointF>() - 4usize];
+    ["Offset of field: PointF::X"][::std::mem::offset_of!(PointF, X) - 0usize];
+    ["Offset of field: PointF::Y"][::std::mem::offset_of!(PointF, Y) - 4usize];
 };
-pub type PointF = _PointF;
 #[repr(C)]
 #[derive(Debug, Default)]
-pub struct _RectF {
+pub struct RectF {
     pub X: f32,
     pub Y: f32,
     pub Width: f32,
@@ -355,77 +354,70 @@ pub struct _RectF {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _RectF"][::std::mem::size_of::<_RectF>() - 16usize];
-    ["Alignment of _RectF"][::std::mem::align_of::<_RectF>() - 4usize];
-    ["Offset of field: _RectF::X"][::std::mem::offset_of!(_RectF, X) - 0usize];
-    ["Offset of field: _RectF::Y"][::std::mem::offset_of!(_RectF, Y) - 4usize];
-    ["Offset of field: _RectF::Width"][::std::mem::offset_of!(_RectF, Width) - 8usize];
-    ["Offset of field: _RectF::Height"][::std::mem::offset_of!(_RectF, Height) - 12usize];
+    ["Size of RectF"][::std::mem::size_of::<RectF>() - 16usize];
+    ["Alignment of RectF"][::std::mem::align_of::<RectF>() - 4usize];
+    ["Offset of field: RectF::X"][::std::mem::offset_of!(RectF, X) - 0usize];
+    ["Offset of field: RectF::Y"][::std::mem::offset_of!(RectF, Y) - 4usize];
+    ["Offset of field: RectF::Width"][::std::mem::offset_of!(RectF, Width) - 8usize];
+    ["Offset of field: RectF::Height"][::std::mem::offset_of!(RectF, Height) - 12usize];
 };
-pub type RectF = _RectF;
 #[repr(C)]
 #[derive(Debug, Default)]
-pub struct _ColorSpacePoint {
+pub struct ColorSpacePoint {
     pub X: f32,
     pub Y: f32,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _ColorSpacePoint"][::std::mem::size_of::<_ColorSpacePoint>() - 8usize];
-    ["Alignment of _ColorSpacePoint"][::std::mem::align_of::<_ColorSpacePoint>() - 4usize];
-    ["Offset of field: _ColorSpacePoint::X"][::std::mem::offset_of!(_ColorSpacePoint, X) - 0usize];
-    ["Offset of field: _ColorSpacePoint::Y"][::std::mem::offset_of!(_ColorSpacePoint, Y) - 4usize];
+    ["Size of ColorSpacePoint"][::std::mem::size_of::<ColorSpacePoint>() - 8usize];
+    ["Alignment of ColorSpacePoint"][::std::mem::align_of::<ColorSpacePoint>() - 4usize];
+    ["Offset of field: ColorSpacePoint::X"][::std::mem::offset_of!(ColorSpacePoint, X) - 0usize];
+    ["Offset of field: ColorSpacePoint::Y"][::std::mem::offset_of!(ColorSpacePoint, Y) - 4usize];
 };
-pub type ColorSpacePoint = _ColorSpacePoint;
 #[repr(C)]
 #[derive(Debug, Default)]
-pub struct _DepthSpacePoint {
+pub struct DepthSpacePoint {
     pub X: f32,
     pub Y: f32,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _DepthSpacePoint"][::std::mem::size_of::<_DepthSpacePoint>() - 8usize];
-    ["Alignment of _DepthSpacePoint"][::std::mem::align_of::<_DepthSpacePoint>() - 4usize];
-    ["Offset of field: _DepthSpacePoint::X"][::std::mem::offset_of!(_DepthSpacePoint, X) - 0usize];
-    ["Offset of field: _DepthSpacePoint::Y"][::std::mem::offset_of!(_DepthSpacePoint, Y) - 4usize];
+    ["Size of DepthSpacePoint"][::std::mem::size_of::<DepthSpacePoint>() - 8usize];
+    ["Alignment of DepthSpacePoint"][::std::mem::align_of::<DepthSpacePoint>() - 4usize];
+    ["Offset of field: DepthSpacePoint::X"][::std::mem::offset_of!(DepthSpacePoint, X) - 0usize];
+    ["Offset of field: DepthSpacePoint::Y"][::std::mem::offset_of!(DepthSpacePoint, Y) - 4usize];
 };
-pub type DepthSpacePoint = _DepthSpacePoint;
 #[repr(C)]
 #[derive(Debug, Default)]
-pub struct _CameraSpacePoint {
+pub struct CameraSpacePoint {
     pub X: f32,
     pub Y: f32,
     pub Z: f32,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _CameraSpacePoint"][::std::mem::size_of::<_CameraSpacePoint>() - 12usize];
-    ["Alignment of _CameraSpacePoint"][::std::mem::align_of::<_CameraSpacePoint>() - 4usize];
-    ["Offset of field: _CameraSpacePoint::X"]
-        [::std::mem::offset_of!(_CameraSpacePoint, X) - 0usize];
-    ["Offset of field: _CameraSpacePoint::Y"]
-        [::std::mem::offset_of!(_CameraSpacePoint, Y) - 4usize];
-    ["Offset of field: _CameraSpacePoint::Z"]
-        [::std::mem::offset_of!(_CameraSpacePoint, Z) - 8usize];
+    ["Size of CameraSpacePoint"][::std::mem::size_of::<CameraSpacePoint>() - 12usize];
+    ["Alignment of CameraSpacePoint"][::std::mem::align_of::<CameraSpacePoint>() - 4usize];
+    ["Offset of field: CameraSpacePoint::X"][::std::mem::offset_of!(CameraSpacePoint, X) - 0usize];
+    ["Offset of field: CameraSpacePoint::Y"][::std::mem::offset_of!(CameraSpacePoint, Y) - 4usize];
+    ["Offset of field: CameraSpacePoint::Z"][::std::mem::offset_of!(CameraSpacePoint, Z) - 8usize];
 };
-pub type CameraSpacePoint = _CameraSpacePoint;
 #[repr(C)]
-pub struct _Joint {
+pub struct Joint {
     pub JointType: JointType,
     pub Position: CameraSpacePoint,
     pub TrackingState: TrackingState,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _Joint"][::std::mem::size_of::<_Joint>() - 20usize];
-    ["Alignment of _Joint"][::std::mem::align_of::<_Joint>() - 4usize];
-    ["Offset of field: _Joint::JointType"][::std::mem::offset_of!(_Joint, JointType) - 0usize];
-    ["Offset of field: _Joint::Position"][::std::mem::offset_of!(_Joint, Position) - 4usize];
-    ["Offset of field: _Joint::TrackingState"]
-        [::std::mem::offset_of!(_Joint, TrackingState) - 16usize];
+    ["Size of Joint"][::std::mem::size_of::<Joint>() - 20usize];
+    ["Alignment of Joint"][::std::mem::align_of::<Joint>() - 4usize];
+    ["Offset of field: Joint::JointType"][::std::mem::offset_of!(Joint, JointType) - 0usize];
+    ["Offset of field: Joint::Position"][::std::mem::offset_of!(Joint, Position) - 4usize];
+    ["Offset of field: Joint::TrackingState"]
+        [::std::mem::offset_of!(Joint, TrackingState) - 16usize];
 };
-impl Default for _Joint {
+impl Default for Joint {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -434,22 +426,21 @@ impl Default for _Joint {
         }
     }
 }
-pub type Joint = _Joint;
 #[repr(C)]
-pub struct _JointOrientation {
+pub struct JointOrientation {
     pub JointType: JointType,
     pub Orientation: Vector4,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _JointOrientation"][::std::mem::size_of::<_JointOrientation>() - 20usize];
-    ["Alignment of _JointOrientation"][::std::mem::align_of::<_JointOrientation>() - 4usize];
-    ["Offset of field: _JointOrientation::JointType"]
-        [::std::mem::offset_of!(_JointOrientation, JointType) - 0usize];
-    ["Offset of field: _JointOrientation::Orientation"]
-        [::std::mem::offset_of!(_JointOrientation, Orientation) - 4usize];
+    ["Size of JointOrientation"][::std::mem::size_of::<JointOrientation>() - 20usize];
+    ["Alignment of JointOrientation"][::std::mem::align_of::<JointOrientation>() - 4usize];
+    ["Offset of field: JointOrientation::JointType"]
+        [::std::mem::offset_of!(JointOrientation, JointType) - 0usize];
+    ["Offset of field: JointOrientation::Orientation"]
+        [::std::mem::offset_of!(JointOrientation, Orientation) - 4usize];
 };
-impl Default for _JointOrientation {
+impl Default for JointOrientation {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -458,10 +449,9 @@ impl Default for _JointOrientation {
         }
     }
 }
-pub type JointOrientation = _JointOrientation;
 #[repr(C)]
 #[derive(Debug, Default)]
-pub struct _CameraIntrinsics {
+pub struct CameraIntrinsics {
     pub FocalLengthX: f32,
     pub FocalLengthY: f32,
     pub PrincipalPointX: f32,
@@ -472,24 +462,23 @@ pub struct _CameraIntrinsics {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _CameraIntrinsics"][::std::mem::size_of::<_CameraIntrinsics>() - 28usize];
-    ["Alignment of _CameraIntrinsics"][::std::mem::align_of::<_CameraIntrinsics>() - 4usize];
-    ["Offset of field: _CameraIntrinsics::FocalLengthX"]
-        [::std::mem::offset_of!(_CameraIntrinsics, FocalLengthX) - 0usize];
-    ["Offset of field: _CameraIntrinsics::FocalLengthY"]
-        [::std::mem::offset_of!(_CameraIntrinsics, FocalLengthY) - 4usize];
-    ["Offset of field: _CameraIntrinsics::PrincipalPointX"]
-        [::std::mem::offset_of!(_CameraIntrinsics, PrincipalPointX) - 8usize];
-    ["Offset of field: _CameraIntrinsics::PrincipalPointY"]
-        [::std::mem::offset_of!(_CameraIntrinsics, PrincipalPointY) - 12usize];
-    ["Offset of field: _CameraIntrinsics::RadialDistortionSecondOrder"]
-        [::std::mem::offset_of!(_CameraIntrinsics, RadialDistortionSecondOrder) - 16usize];
-    ["Offset of field: _CameraIntrinsics::RadialDistortionFourthOrder"]
-        [::std::mem::offset_of!(_CameraIntrinsics, RadialDistortionFourthOrder) - 20usize];
-    ["Offset of field: _CameraIntrinsics::RadialDistortionSixthOrder"]
-        [::std::mem::offset_of!(_CameraIntrinsics, RadialDistortionSixthOrder) - 24usize];
+    ["Size of CameraIntrinsics"][::std::mem::size_of::<CameraIntrinsics>() - 28usize];
+    ["Alignment of CameraIntrinsics"][::std::mem::align_of::<CameraIntrinsics>() - 4usize];
+    ["Offset of field: CameraIntrinsics::FocalLengthX"]
+        [::std::mem::offset_of!(CameraIntrinsics, FocalLengthX) - 0usize];
+    ["Offset of field: CameraIntrinsics::FocalLengthY"]
+        [::std::mem::offset_of!(CameraIntrinsics, FocalLengthY) - 4usize];
+    ["Offset of field: CameraIntrinsics::PrincipalPointX"]
+        [::std::mem::offset_of!(CameraIntrinsics, PrincipalPointX) - 8usize];
+    ["Offset of field: CameraIntrinsics::PrincipalPointY"]
+        [::std::mem::offset_of!(CameraIntrinsics, PrincipalPointY) - 12usize];
+    ["Offset of field: CameraIntrinsics::RadialDistortionSecondOrder"]
+        [::std::mem::offset_of!(CameraIntrinsics, RadialDistortionSecondOrder) - 16usize];
+    ["Offset of field: CameraIntrinsics::RadialDistortionFourthOrder"]
+        [::std::mem::offset_of!(CameraIntrinsics, RadialDistortionFourthOrder) - 20usize];
+    ["Offset of field: CameraIntrinsics::RadialDistortionSixthOrder"]
+        [::std::mem::offset_of!(CameraIntrinsics, RadialDistortionSixthOrder) - 24usize];
 };
-pub type CameraIntrinsics = _CameraIntrinsics;
 unsafe extern "C" {
     pub static mut __MIDL_itf_Kinect2ECOM_0000_0000_v0_0_c_ifspec: RPC_IF_HANDLE;
 }
@@ -5287,7 +5276,7 @@ pub enum KinectEngagementMode {
 }
 #[repr(C)]
 #[derive(Debug, Default)]
-pub struct _KinectManipulationDelta {
+pub struct KinectManipulationDelta {
     pub Translation: PointF,
     pub Scale: f32,
     pub Rotation: f32,
@@ -5295,41 +5284,38 @@ pub struct _KinectManipulationDelta {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _KinectManipulationDelta"]
-        [::std::mem::size_of::<_KinectManipulationDelta>() - 20usize];
-    ["Alignment of _KinectManipulationDelta"]
-        [::std::mem::align_of::<_KinectManipulationDelta>() - 4usize];
-    ["Offset of field: _KinectManipulationDelta::Translation"]
-        [::std::mem::offset_of!(_KinectManipulationDelta, Translation) - 0usize];
-    ["Offset of field: _KinectManipulationDelta::Scale"]
-        [::std::mem::offset_of!(_KinectManipulationDelta, Scale) - 8usize];
-    ["Offset of field: _KinectManipulationDelta::Rotation"]
-        [::std::mem::offset_of!(_KinectManipulationDelta, Rotation) - 12usize];
-    ["Offset of field: _KinectManipulationDelta::Expansion"]
-        [::std::mem::offset_of!(_KinectManipulationDelta, Expansion) - 16usize];
+    ["Size of KinectManipulationDelta"][::std::mem::size_of::<KinectManipulationDelta>() - 20usize];
+    ["Alignment of KinectManipulationDelta"]
+        [::std::mem::align_of::<KinectManipulationDelta>() - 4usize];
+    ["Offset of field: KinectManipulationDelta::Translation"]
+        [::std::mem::offset_of!(KinectManipulationDelta, Translation) - 0usize];
+    ["Offset of field: KinectManipulationDelta::Scale"]
+        [::std::mem::offset_of!(KinectManipulationDelta, Scale) - 8usize];
+    ["Offset of field: KinectManipulationDelta::Rotation"]
+        [::std::mem::offset_of!(KinectManipulationDelta, Rotation) - 12usize];
+    ["Offset of field: KinectManipulationDelta::Expansion"]
+        [::std::mem::offset_of!(KinectManipulationDelta, Expansion) - 16usize];
 };
-pub type KinectManipulationDelta = _KinectManipulationDelta;
 #[repr(C)]
 #[derive(Debug, Default)]
-pub struct _KinectManipulationVelocities {
+pub struct KinectManipulationVelocities {
     pub Linear: PointF,
     pub Angular: f32,
     pub Expansion: f32,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _KinectManipulationVelocities"]
-        [::std::mem::size_of::<_KinectManipulationVelocities>() - 16usize];
-    ["Alignment of _KinectManipulationVelocities"]
-        [::std::mem::align_of::<_KinectManipulationVelocities>() - 4usize];
-    ["Offset of field: _KinectManipulationVelocities::Linear"]
-        [::std::mem::offset_of!(_KinectManipulationVelocities, Linear) - 0usize];
-    ["Offset of field: _KinectManipulationVelocities::Angular"]
-        [::std::mem::offset_of!(_KinectManipulationVelocities, Angular) - 8usize];
-    ["Offset of field: _KinectManipulationVelocities::Expansion"]
-        [::std::mem::offset_of!(_KinectManipulationVelocities, Expansion) - 12usize];
+    ["Size of KinectManipulationVelocities"]
+        [::std::mem::size_of::<KinectManipulationVelocities>() - 16usize];
+    ["Alignment of KinectManipulationVelocities"]
+        [::std::mem::align_of::<KinectManipulationVelocities>() - 4usize];
+    ["Offset of field: KinectManipulationVelocities::Linear"]
+        [::std::mem::offset_of!(KinectManipulationVelocities, Linear) - 0usize];
+    ["Offset of field: KinectManipulationVelocities::Angular"]
+        [::std::mem::offset_of!(KinectManipulationVelocities, Angular) - 8usize];
+    ["Offset of field: KinectManipulationVelocities::Expansion"]
+        [::std::mem::offset_of!(KinectManipulationVelocities, Expansion) - 12usize];
 };
-pub type KinectManipulationVelocities = _KinectManipulationVelocities;
 unsafe extern "C" {
     pub static mut __MIDL_itf_Kinect2ECOM_0000_0052_v0_0_c_ifspec: RPC_IF_HANDLE;
 }
