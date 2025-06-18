@@ -1,8 +1,8 @@
 use crate::bindings::{
-    BOOLEAN, DetectionResult, HandState, IBody, IBodyFrame, IBodyFrameArrivedEventArgs,
+    BOOLEAN, DetectionResult, FrameEdges, HandState, IBody, IBodyFrame, IBodyFrameArrivedEventArgs,
     IBodyFrameReader, IBodyFrameReference, IBodyFrameSource, IBodyHandPair,
     IFrameCapturedEventArgs, IKinectSensor, INT32, Joint, JointOrientation, TIMESPAN,
-    TrackingConfidence, UINT, ULONG, WAITABLE_HANDLE,
+    TrackingConfidence, UINT, WAITABLE_HANDLE,
 };
 use crate::frame::FrameCapturedEventArgs;
 use crate::kinect::KinectSensor;
@@ -182,13 +182,13 @@ impl Body {
         }
     }
 
-    pub fn get_clipped_edges(&self) -> Result<u32, Error> {
+    pub fn get_clipped_edges(&self) -> Result<FrameEdges, Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_ClippedEdges.ok_or(E_FAIL)?;
-        let mut clipped_edges: ULONG = 0;
+        let mut clipped_edges: FrameEdges = unsafe { std::mem::zeroed() };
         let hr = unsafe { get_fn(self.ptr, &mut clipped_edges) };
         if hr.is_ok() {
             Ok(clipped_edges)
@@ -770,17 +770,30 @@ impl BodyFrame {
             Err(Error::from_hresult(hr))
         }
     }
-
-    pub fn get_and_refresh_body_data(&self, bodies: &mut [*mut IBody]) -> Result<(), Error> {
+    pub fn get_and_refresh_body_data(&self) -> Result<Vec<Body>, Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
+
+        // Get the body frame source to determine body count
+        let body_source = self.get_body_frame_source()?;
+        let body_count = body_source.get_body_count()? as usize;
+
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.GetAndRefreshBodyData.ok_or(E_FAIL)?;
-        let capacity = bodies.len() as UINT;
-        let hr = unsafe { get_fn(self.ptr, capacity, bodies.as_mut_ptr()) };
+
+        // Create null pointers for the API to fill
+        let mut raw_ptrs: Vec<*mut IBody> = vec![ptr::null_mut(); body_count];
+        let hr = unsafe { get_fn(self.ptr, body_count as UINT, raw_ptrs.as_mut_ptr()) };
+
         if hr.is_ok() {
-            Ok(())
+            // Convert non-null pointers to Body objects
+            let bodies: Vec<Body> = raw_ptrs
+                .into_iter()
+                .filter(|&ptr| !ptr.is_null())
+                .map(|ptr| Body::new(ptr))
+                .collect();
+            Ok(bodies)
         } else {
             Err(Error::from_hresult(hr))
         }
