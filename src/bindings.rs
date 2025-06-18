@@ -342,7 +342,7 @@ pub enum KinectAudioCalibrationState {
     Calibrated = 2,
 }
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Vector4 {
     pub x: f32,
     pub y: f32,
@@ -429,6 +429,8 @@ const _: () = {
     ["Offset of field: CameraSpacePoint::Y"][::std::mem::offset_of!(CameraSpacePoint, Y) - 4usize];
     ["Offset of field: CameraSpacePoint::Z"][::std::mem::offset_of!(CameraSpacePoint, Z) - 8usize];
 };
+
+#[derive(Debug, Clone)]
 #[repr(C)]
 pub struct Joint {
     pub JointType: JointType,
@@ -453,6 +455,8 @@ impl Default for Joint {
         }
     }
 }
+
+#[derive(Debug, Clone)]
 #[repr(C)]
 pub struct JointOrientation {
     pub JointType: JointType,
