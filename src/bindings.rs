@@ -167,167 +167,151 @@ impl Default for IPropertyChangedEventArgs {
         unsafe {
             ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
             s.assume_init()
-        }
-    }
+        }    }
 }
-pub use self::_KinectCapabilities as KinectCapabilities;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _KinectCapabilities {
-    KinectCapabilities_None = 0,
-    KinectCapabilities_Vision = 1,
-    KinectCapabilities_Audio = 2,
-    KinectCapabilities_Face = 4,
-    KinectCapabilities_Expressions = 8,
-    KinectCapabilities_Gamechat = 16,
+pub enum KinectCapabilities {
+    None = 0,
+    Vision = 1,
+    Audio = 2,
+    Face = 4,
+    Expressions = 8,
+    Gamechat = 16,
 }
-pub use self::_FrameSourceTypes as FrameSourceTypes;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _FrameSourceTypes {
-    FrameSourceTypes_None = 0,
-    FrameSourceTypes_Color = 1,
-    FrameSourceTypes_Infrared = 2,
-    FrameSourceTypes_LongExposureInfrared = 4,
-    FrameSourceTypes_Depth = 8,
-    FrameSourceTypes_BodyIndex = 16,
-    FrameSourceTypes_Body = 32,
-    FrameSourceTypes_Audio = 64,
+pub enum FrameSourceTypes {
+    None = 0,
+    Color = 1,
+    Infrared = 2,
+    LongExposureInfrared = 4,
+    Depth = 8,
+    BodyIndex = 16,
+    Body = 32,
+    Audio = 64,
 }
-pub use self::_ColorImageFormat as ColorImageFormat;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _ColorImageFormat {
-    ColorImageFormat_None = 0,
-    ColorImageFormat_Rgba = 1,
-    ColorImageFormat_Yuv = 2,
-    ColorImageFormat_Bgra = 3,
-    ColorImageFormat_Bayer = 4,
-    ColorImageFormat_Yuy2 = 5,
+pub enum ColorImageFormat {
+    None = 0,
+    Rgba = 1,
+    Yuv = 2,
+    Bgra = 3,
+    Bayer = 4,
+    Yuy2 = 5,
 }
-pub use self::_HandState as HandState;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _HandState {
-    HandState_Unknown = 0,
-    HandState_NotTracked = 1,
-    HandState_Open = 2,
-    HandState_Closed = 3,
-    HandState_Lasso = 4,
+pub enum HandState {
+    Unknown = 0,
+    NotTracked = 1,
+    Open = 2,
+    Closed = 3,
+    Lasso = 4,
 }
-pub use self::_Expression as Expression;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _Expression {
-    Expression_Neutral = 0,
-    Expression_Happy = 1,
-    Expression_Count = 2,
+pub enum Expression {
+    Neutral = 0,
+    Happy = 1,
+    Count = 2,
 }
-pub use self::_DetectionResult as DetectionResult;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _DetectionResult {
-    DetectionResult_Unknown = 0,
-    DetectionResult_No = 1,
-    DetectionResult_Maybe = 2,
-    DetectionResult_Yes = 3,
+pub enum DetectionResult {
+    Unknown = 0,
+    No = 1,
+    Maybe = 2,
+    Yes = 3,
 }
-pub use self::_TrackingConfidence as TrackingConfidence;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _TrackingConfidence {
-    TrackingConfidence_Low = 0,
-    TrackingConfidence_High = 1,
+pub enum TrackingConfidence {
+    Low = 0,
+    High = 1,
 }
-pub use self::_Activity as Activity;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _Activity {
-    Activity_EyeLeftClosed = 0,
-    Activity_EyeRightClosed = 1,
-    Activity_MouthOpen = 2,
-    Activity_MouthMoved = 3,
-    Activity_LookingAway = 4,
-    Activity_Count = 5,
+pub enum Activity {
+    EyeLeftClosed = 0,
+    EyeRightClosed = 1,
+    MouthOpen = 2,
+    MouthMoved = 3,
+    LookingAway = 4,
+    Count = 5,
 }
-pub use self::_Appearance as Appearance;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _Appearance {
-    Appearance_WearingGlasses = 0,
-    Appearance_Count = 1,
+pub enum Appearance {
+    WearingGlasses = 0,
+    Count = 1,
 }
-pub use self::_JointType as JointType;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _JointType {
-    JointType_SpineBase = 0,
-    JointType_SpineMid = 1,
-    JointType_Neck = 2,
-    JointType_Head = 3,
-    JointType_ShoulderLeft = 4,
-    JointType_ElbowLeft = 5,
-    JointType_WristLeft = 6,
-    JointType_HandLeft = 7,
-    JointType_ShoulderRight = 8,
-    JointType_ElbowRight = 9,
-    JointType_WristRight = 10,
-    JointType_HandRight = 11,
-    JointType_HipLeft = 12,
-    JointType_KneeLeft = 13,
-    JointType_AnkleLeft = 14,
-    JointType_FootLeft = 15,
-    JointType_HipRight = 16,
-    JointType_KneeRight = 17,
-    JointType_AnkleRight = 18,
-    JointType_FootRight = 19,
-    JointType_SpineShoulder = 20,
-    JointType_HandTipLeft = 21,
-    JointType_ThumbLeft = 22,
-    JointType_HandTipRight = 23,
-    JointType_ThumbRight = 24,
-    JointType_Count = 25,
+pub enum JointType {
+    SpineBase = 0,
+    SpineMid = 1,
+    Neck = 2,
+    Head = 3,
+    ShoulderLeft = 4,
+    ElbowLeft = 5,
+    WristLeft = 6,
+    HandLeft = 7,
+    ShoulderRight = 8,
+    ElbowRight = 9,
+    WristRight = 10,
+    HandRight = 11,
+    HipLeft = 12,
+    KneeLeft = 13,
+    AnkleLeft = 14,
+    FootLeft = 15,
+    HipRight = 16,
+    KneeRight = 17,
+    AnkleRight = 18,
+    FootRight = 19,
+    SpineShoulder = 20,
+    HandTipLeft = 21,
+    ThumbLeft = 22,
+    HandTipRight = 23,
+    ThumbRight = 24,
+    Count = 25,
 }
-pub use self::_TrackingState as TrackingState;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _TrackingState {
-    TrackingState_NotTracked = 0,
-    TrackingState_Inferred = 1,
-    TrackingState_Tracked = 2,
+pub enum TrackingState {
+    NotTracked = 0,
+    Inferred = 1,
+    Tracked = 2,
 }
-pub use self::_FrameEdges as FrameEdges;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _FrameEdges {
-    FrameEdge_None = 0,
-    FrameEdge_Right = 1,
-    FrameEdge_Left = 2,
-    FrameEdge_Top = 4,
-    FrameEdge_Bottom = 8,
+pub enum FrameEdges {
+    None = 0,
+    Right = 1,
+    Left = 2,
+    Top = 4,
+    Bottom = 8,
 }
-pub use self::_FrameCapturedStatus as FrameCapturedStatus;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _FrameCapturedStatus {
-    FrameCapturedStatus_Unknown = 0,
-    FrameCapturedStatus_Queued = 1,
-    FrameCapturedStatus_Dropped = 2,
+pub enum FrameCapturedStatus {
+    Unknown = 0,
+    Queued = 1,
+    Dropped = 2,
 }
-pub use self::_AudioBeamMode as AudioBeamMode;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _AudioBeamMode {
-    AudioBeamMode_Automatic = 0,
-    AudioBeamMode_Manual = 1,
+pub enum AudioBeamMode {
+    Automatic = 0,
+    Manual = 1,
 }
-pub use self::_KinectAudioCalibrationState as KinectAudioCalibrationState;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _KinectAudioCalibrationState {
-    KinectAudioCalibrationState_Unknown = 0,
-    KinectAudioCalibrationState_CalibrationRequired = 1,
-    KinectAudioCalibrationState_Calibrated = 2,
+pub enum KinectAudioCalibrationState {
+    Unknown = 0,
+    CalibrationRequired = 1,
+    Calibrated = 2,
 }
 #[repr(C)]
 #[derive(Debug, Default)]
@@ -596,7 +580,7 @@ pub struct IKinectSensorVtbl {
     pub OpenMultiSourceFrameReader: ::std::option::Option<
         unsafe extern "C" fn(
             This: *mut IKinectSensor,
-            enabledFrameSourceTypes: ULONG,
+            enabledFrameSourceTypes: FrameSourceTypes,
             multiSourceFrameReader: *mut *mut IMultiSourceFrameReader,
         ) -> HRESULT,
     >,
@@ -5250,62 +5234,56 @@ impl Default for IColorCameraSettings {
 unsafe extern "C" {
     pub fn GetDefaultKinectSensor(defaultKinectSensor: *mut *mut IKinectSensor) -> HRESULT;
 }
-pub use self::_PointerDeviceType as PointerDeviceType;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _PointerDeviceType {
-    PointerDeviceType_Touch = 0,
-    PointerDeviceType_Pen = 1,
-    PointerDeviceType_Mouse = 2,
-    PointerDeviceType_Kinect = 3,
+pub enum PointerDeviceType {
+    Touch = 0,
+    Pen = 1,
+    Mouse = 2,
+    Kinect = 3,
 }
-pub use self::_HandType as HandType;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _HandType {
-    HandType_NONE = 0,
-    HandType_LEFT = 1,
-    HandType_RIGHT = 2,
+pub enum HandType {
+    NONE = 0,
+    LEFT = 1,
+    RIGHT = 2,
 }
-pub use self::_KinectHoldingState as KinectHoldingState;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _KinectHoldingState {
-    KinectHoldingState_Started = 0,
-    KinectHoldingState_Completed = 1,
-    KinectHoldingState_Canceled = 2,
+pub enum KinectHoldingState {
+    Started = 0,
+    Completed = 1,
+    Canceled = 2,
 }
-pub use self::_KinectGestureSettings as KinectGestureSettings;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _KinectGestureSettings {
-    KinectGestureSettings_None = 0,
-    KinectGestureSettings_Tap = 1,
-    KinectGestureSettings_ManipulationTranslateX = 64,
-    KinectGestureSettings_ManipulationTranslateY = 128,
-    KinectGestureSettings_ManipulationTranslateRailsX = 256,
-    KinectGestureSettings_ManipulationTranslateRailsY = 512,
-    KinectGestureSettings_ManipulationScale = 2048,
-    KinectGestureSettings_ManipulationTranslateInertia = 4096,
-    KinectGestureSettings_KinectHold = 65536,
+pub enum KinectGestureSettings {
+    None = 0,
+    Tap = 1,
+    ManipulationTranslateX = 64,
+    ManipulationTranslateY = 128,
+    ManipulationTranslateRailsX = 256,
+    ManipulationTranslateRailsY = 512,
+    ManipulationScale = 2048,
+    ManipulationTranslateInertia = 4096,
+    KinectHold = 65536,
 }
-pub use self::_KinectInteractionMode as KinectInteractionMode;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _KinectInteractionMode {
-    KinectInteractionMode_Normal = 0,
-    KinectInteractionMode_Off = 1,
-    KinectInteractionMode_Media = 2,
+pub enum KinectInteractionMode {
+    Normal = 0,
+    Off = 1,
+    Media = 2,
 }
-pub use self::_KinectEngagementMode as KinectEngagementMode;
 #[repr(i32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _KinectEngagementMode {
-    KinectEngagementMode_None = 0,
-    KinectEngagementMode_SystemOnePerson = 1,
-    KinectEngagementMode_SystemTwoPerson = 2,
-    KinectEngagementMode_ManualOnePerson = 3,
-    KinectEngagementMode_ManualTwoPerson = 4,
+pub enum KinectEngagementMode {
+    None = 0,
+    SystemOnePerson = 1,
+    SystemTwoPerson = 2,
+    ManualOnePerson = 3,
+    ManualTwoPerson = 4,
 }
 #[repr(C)]
 #[derive(Debug, Default)]
@@ -7228,24 +7206,4 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub static mut __MIDL_itf_Kinect2ECOM_0000_0070_v0_0_s_ifspec: RPC_IF_HANDLE;
-}
-#[repr(C)]
-#[derive(Debug, Default)]
-pub struct __crt_locale_data {
-    pub _address: u8,
-}
-#[repr(C)]
-#[derive(Debug, Default)]
-pub struct __crt_multibyte_data {
-    pub _address: u8,
-}
-#[repr(C)]
-#[derive(Debug, Default)]
-pub struct _ACTIVATION_CONTEXT {
-    pub _address: u8,
-}
-#[repr(C)]
-#[derive(Debug, Default)]
-pub struct NET_ADDRESS_INFO_ {
-    pub _address: u8,
 }

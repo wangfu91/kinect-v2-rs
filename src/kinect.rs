@@ -1,7 +1,7 @@
 use crate::audio::AudioSource;
 use crate::bindings::{
-    self, BOOLEAN, GetDefaultKinectSensor, IIsAvailableChangedEventArgs, IKinectSensor, UINT,
-    ULONG, WAITABLE_HANDLE, WCHAR,
+    self, BOOLEAN, FrameSourceTypes, GetDefaultKinectSensor, IIsAvailableChangedEventArgs,
+    IKinectSensor, UINT, ULONG, WAITABLE_HANDLE, WCHAR,
 };
 use crate::body::BodyFrameSource;
 use crate::body_index::BodyIndexFrameSource;
@@ -285,7 +285,7 @@ impl KinectSensor {
 
     pub fn open_multi_source_frame_reader(
         &self,
-        enabled_frame_source_types: ULONG,
+        enabled_frame_source_types: FrameSourceTypes,
     ) -> Result<MultiSourceFrameReader, Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));

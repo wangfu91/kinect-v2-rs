@@ -7,6 +7,7 @@ use windows::{
     core::Error,
 };
 
+#[derive(Debug, Clone)]
 pub struct FrameDescription {
     ptr: *mut IFrameDescription,
 }
@@ -160,7 +161,7 @@ impl FrameCapturedEventArgs {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_FrameType.ok_or(E_FAIL)?;
-        let mut frame_type: FrameSourceTypes = FrameSourceTypes::FrameSourceTypes_None;
+        let mut frame_type: FrameSourceTypes = FrameSourceTypes::None;
         let hr = unsafe { get_fn(self.ptr, &mut frame_type) };
         if hr.is_ok() {
             Ok(frame_type)
@@ -175,7 +176,7 @@ impl FrameCapturedEventArgs {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_FrameStatus.ok_or(E_FAIL)?;
-        let mut status: FrameCapturedStatus = FrameCapturedStatus::FrameCapturedStatus_Unknown;
+        let mut status: FrameCapturedStatus = FrameCapturedStatus::Unknown;
         let hr = unsafe { get_fn(self.ptr, &mut status) };
         if hr.is_ok() {
             Ok(status)

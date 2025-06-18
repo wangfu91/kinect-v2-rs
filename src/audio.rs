@@ -198,7 +198,7 @@ impl AudioSource {
             .get_AudioCalibrationState
             .ok_or_else(|| Error::from(E_FAIL))?;
         let mut audio_calibration_state: KinectAudioCalibrationState =
-            KinectAudioCalibrationState::KinectAudioCalibrationState_Unknown;
+            KinectAudioCalibrationState::Unknown;
         let hr = unsafe { get_state_fn(self.ptr, &mut audio_calibration_state) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
@@ -256,7 +256,7 @@ impl AudioBeam {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
         let get_mode_fn = vtbl.get_AudioBeamMode.ok_or_else(|| Error::from(E_FAIL))?;
-        let mut audio_beam_mode: AudioBeamMode = AudioBeamMode::AudioBeamMode_Automatic; // Default
+        let mut audio_beam_mode: AudioBeamMode = AudioBeamMode::Automatic; // Default
         let hr = unsafe { get_mode_fn(self.ptr, &mut audio_beam_mode) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))
@@ -696,7 +696,7 @@ impl AudioBeamSubFrame {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or_else(|| Error::from(E_POINTER))?;
         let get_mode_fn = vtbl.get_AudioBeamMode.ok_or_else(|| Error::from(E_FAIL))?;
-        let mut audio_beam_mode: AudioBeamMode = AudioBeamMode::AudioBeamMode_Automatic; // Default
+        let mut audio_beam_mode: AudioBeamMode = AudioBeamMode::Automatic; // Default
         let hr = unsafe { get_mode_fn(self.ptr, &mut audio_beam_mode) };
         if hr.is_err() {
             Err(Error::from_hresult(hr))

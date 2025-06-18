@@ -15,6 +15,7 @@ use windows::{
 
 pub use crate::bindings::ColorImageFormat;
 
+#[derive(Debug, Clone)]
 pub struct ColorFrame {
     ptr: *mut IColorFrame,
 }
@@ -46,7 +47,7 @@ impl ColorFrame {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_RawColorImageFormat.ok_or(E_FAIL)?;
-        let mut format: ColorImageFormat = ColorImageFormat::ColorImageFormat_None;
+        let mut format: ColorImageFormat = ColorImageFormat::None;
         let hr = unsafe { get_fn(self.ptr, &mut format) };
         if hr.is_ok() {
             Ok(format)
@@ -191,6 +192,7 @@ impl Drop for ColorFrame {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct ColorFrameArrivedEventArgs {
     ptr: *mut IColorFrameArrivedEventArgs,
 }
@@ -238,6 +240,7 @@ impl Drop for ColorFrameArrivedEventArgs {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct ColorFrameReference {
     ptr: *mut IColorFrameReference,
 }
