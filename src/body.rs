@@ -791,7 +791,7 @@ impl BodyFrame {
             let bodies: Vec<Body> = raw_ptrs
                 .into_iter()
                 .filter(|&ptr| !ptr.is_null())
-                .map(|ptr| Body::new(ptr))
+                .map(Body::new)
                 .collect();
             Ok(bodies)
         } else {
