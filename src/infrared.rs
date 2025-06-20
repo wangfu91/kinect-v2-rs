@@ -9,6 +9,34 @@ use std::ptr;
 use windows::Win32::Foundation::{E_FAIL, E_POINTER};
 use windows::core::Error;
 
+/// InfraredSourceValueMaximum is the highest value that can be returned in the InfraredFrame.
+/// It is cast to a float for readability in the visualization code.
+pub const INFRARED_SOURCE_VALUE_MAXIMUM: u16 = u16::MAX;
+
+/// The InfraredOutputValueMinimum value is used to set the lower limit, post processing, of the
+/// infrared data that we will render.
+/// Increasing or decreasing this value sets a brightness "wall" either closer or further away.
+pub const INFRARED_OUTPUT_VALUE_MINIMUM: f32 = 0.1;
+
+/// The InfraredOutputValueMaximum value is the upper limit, post processing, of the
+/// infrared data that we will render.
+pub const INFRARED_OUTPUT_VALUE_MAXIMUM: f32 = 1.0;
+
+/// The InfraredSceneValueAverage value specifies the average infrared value of the scene.
+/// This value was selected by analyzing the average pixel intensity for a given scene.
+/// Depending on the visualization requirements for a given application, this value can be
+/// hard coded, as was done here, or calculated by averaging the intensity for each pixel prior
+/// to rendering.
+pub const INFRARED_SCENE_VALUE_AVERAGE: f32 = 0.08;
+
+/// The InfraredSceneStandardDeviations value specifies the number of standard deviations
+/// to apply to InfraredSceneValueAverage. This value was selected by analyzing data
+/// from a given scene.
+/// Depending on the visualization requirements for a given application, this value can be
+/// hard coded, as was done here, or calculated at runtime.
+pub const INFRARED_SCENE_STANDARD_DEVIATIONS: f32 = 3.0;
+
+/// InfraredFrame represents a single frame of infrared data.
 pub struct InfraredFrame {
     ptr: *mut IInfraredFrame,
 }
