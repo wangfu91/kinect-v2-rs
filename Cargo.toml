@@ -6,6 +6,13 @@ members = [ "kinect-v2",
 
 [workspace.package]
 edition = "2024"
+authors = ["Fu Wang <wangfu91@hotmail.com>"]
+description = "A Rust binding for the Kinect V2 Windows SDK."
+license = "MIT"
+repository = "https://github.com/wangfu91/kinect-v2-rs"
+keywords = ["kinect-v2", "sdk", "windows"]
+categories = ["api-bindings", "os::windows-apis"]
+readme = "README.md"
 
 [workspace.dependencies]
 log = "0.4"
