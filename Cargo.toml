@@ -1,21 +1,8 @@
-[package]
-name = "kinect-v2-rs"
-version = "0.1.0"
+[workspace]
+resolver = "3"
+members = [ 
+    "kinect-v2-sys"
+]
+
+[workspace.package]
 edition = "2024"
-
-[dependencies]
-windows = { version = "0.61.2", features = [
-    "Win32_Foundation", 
-    "Win32_System_Com",
-    "Win32_System_Com_Urlmon",
-    "Win32_Graphics_Gdi",
-    "Win32_UI_Input_Ime",
-    "Win32_UI_WindowsAndMessaging",
-    "Win32_System_Threading",
-]}
-
-[build-dependencies]
-bindgen = "0.72.0"
-
-[dev-dependencies]
-anyhow = "1.0"
