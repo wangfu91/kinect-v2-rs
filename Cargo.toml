@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = [ 
+members = [ "kinect-v2", 
     "kinect-v2-sys"
 ]
 
