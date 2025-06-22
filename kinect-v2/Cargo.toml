@@ -4,13 +4,13 @@ version = "0.1.0"
 edition.workspace = true
 
 [dependencies]
-log = "0.4"
-windows = { version = "0.61.2", features = [
+log.workspace = true
+windows = { workspace = true, features = [
     "Win32_Foundation", 
     "Win32_System_Threading",
 ]}
 kinect-v2-sys = { path= "../kinect-v2-sys" }
 
 [dev-dependencies]
-anyhow = "1.0"
-hound = "3.5"
+anyhow.workspace = true
+hound.workspace = true
