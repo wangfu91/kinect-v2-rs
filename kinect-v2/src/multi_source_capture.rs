@@ -82,12 +82,14 @@ impl<'a> Drop for MultiSourceCaptureIter<'a> {
     fn drop(&mut self) {
         // Best effort to unsubscribe from the frame arrived event.
         // Errors in `drop` are typically logged or ignored, as panicking in drop is problematic.
-        if let Err(_e) = self
+        if let Err(e) = self
             .reader
             .unsubscribe_multi_source_frame_arrived(self.waitable_handle)
         {
-            // Consider logging this error if a logging facade is available.
-            // eprintln!("Failed to unsubscribe multi-source frame arrived event: {:?}", e);
+            log::warn!(
+                "Failed to unsubscribe multi-source frame arrived event: {:?}",
+                e
+            );
         }
     }
 }

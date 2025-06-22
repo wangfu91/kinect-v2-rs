@@ -4,6 +4,7 @@ version = "0.1.0"
 edition.workspace = true
 
 [dependencies]
+log = "0.4"
 windows = { version = "0.61.3", features = [
     "Win32_Foundation", 
     "Win32_System",

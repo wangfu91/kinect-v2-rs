@@ -82,9 +82,11 @@ impl<'a> Drop for BodyIndexFrameCaptureIter<'a> {
     fn drop(&mut self) {
         // Best effort to unsubscribe from the frame arrived event.
         // Errors in `drop` are typically logged or ignored, as panicking in drop is problematic.
-        if let Err(_e) = self.reader.unsubscribe_frame_arrived(self.waitable_handle) {
-            // Consider logging this error if a logging facade is available.
-            // eprintln!("Failed to unsubscribe body index frame arrived event: {:?}", e);
+        if let Err(e) = self.reader.unsubscribe_frame_arrived(self.waitable_handle) {
+            log::warn!(
+                "Failed to unsubscribe body index frame arrived event: {:?}",
+                e
+            );
         }
     }
 }

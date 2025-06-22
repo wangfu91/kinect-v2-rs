@@ -362,7 +362,7 @@ impl Drop for KinectSensor {
                 if let Some(release_fn) = vtbl.Release {
                     release_fn(self.ptr);
                 } else {
-                    eprintln!("KinectSensor Release function pointer is null in Drop");
+                    log::warn!("KinectSensor Release function pointer is null in Drop");
                 }
             }
             self.ptr = ptr::null_mut();
