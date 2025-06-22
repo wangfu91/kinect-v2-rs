@@ -1,5 +1,5 @@
 [package]
-name = "kinect-v2-rs"
+name = "kinect-v2-sys"
 version = "0.1.0"
 edition = "2024"
 
