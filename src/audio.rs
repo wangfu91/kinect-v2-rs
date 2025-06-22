@@ -1146,11 +1146,11 @@ mod tests {
                         "Expected at least 1 sub-frame in audio beam frame"
                     );
                     assert!(
-                        beam_angle >= -180.0 && beam_angle <= 180.0,
+                        (-180.0..=180.0).contains(&beam_angle),
                         "Beam angle out of range"
                     );
                     assert!(
-                        beam_angle_confidence >= 0.0 && beam_angle_confidence <= 1.0,
+                        (0.0..=1.0).contains(&beam_angle_confidence),
                         "Beam angle confidence out of range"
                     );
                     assert!(relative_time >= 0, "Relative time should be non-negative");
@@ -1161,7 +1161,7 @@ mod tests {
                     }
                 }
                 Err(e) => {
-                    if e.code() == E_PENDING.into() {
+                    if e.code() == E_PENDING {
                         println!("Audio frame not ready yet, waiting...");
                         // If the frame is not ready yet, wait and try again
                         thread::sleep(Duration::from_millis(100));
@@ -1223,11 +1223,11 @@ mod tests {
                     "Expected at least 1 sub-frame in audio beam frame"
                 );
                 assert!(
-                    beam_angle >= -180.0 && beam_angle <= 180.0,
+                    (-180.0..=180.0).contains(&beam_angle),
                     "Beam angle out of range"
                 );
                 assert!(
-                    beam_angle_confidence >= 0.0 && beam_angle_confidence <= 1.0,
+                    (0.0..=1.0).contains(&beam_angle_confidence),
                     "Beam angle confidence out of range"
                 );
                 assert!(relative_time >= 0, "Relative time should be non-negative");

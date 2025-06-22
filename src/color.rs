@@ -1,4 +1,5 @@
 use crate::{
+    ColorImageFormat,
     bindings::{
         BOOLEAN, IColorCameraSettings, IColorFrame, IColorFrameArrivedEventArgs, IColorFrameReader,
         IColorFrameReference, IColorFrameSource, IFrameCapturedEventArgs, IFrameDescription,
@@ -12,8 +13,6 @@ use windows::{
     Win32::Foundation::{E_FAIL, E_POINTER},
     core::Error,
 };
-
-pub use crate::bindings::ColorImageFormat;
 
 #[derive(Debug, Clone)]
 pub struct ColorFrame {
@@ -721,7 +720,7 @@ mod tests {
                     }
                 }
                 Err(e) => {
-                    if e.code() == E_PENDING.into() {
+                    if e.code() == E_PENDING {
                         // If the frame is not ready yet, wait and try again
                         thread::sleep(Duration::from_millis(100));
                     } else {

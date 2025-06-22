@@ -1,8 +1,8 @@
 use crate::bindings::{
-    BOOLEAN, DetectionResult, FrameEdges, HandState, IBody, IBodyFrame, IBodyFrameArrivedEventArgs,
-    IBodyFrameReader, IBodyFrameReference, IBodyFrameSource, IBodyHandPair,
-    IFrameCapturedEventArgs, IKinectSensor, INT32, Joint, JointOrientation, TIMESPAN,
-    TrackingConfidence, UINT, WAITABLE_HANDLE,
+    self, BOOLEAN, CreateBodyHandPair, DetectionResult, FrameEdges, HandState, HandType, IBody,
+    IBodyFrame, IBodyFrameArrivedEventArgs, IBodyFrameReader, IBodyFrameReference,
+    IBodyFrameSource, IBodyHandPair, IFrameCapturedEventArgs, IKinectSensor, INT32, Joint,
+    JointOrientation, TIMESPAN, TrackingConfidence, UINT, WAITABLE_HANDLE,
 };
 use crate::frame::FrameCapturedEventArgs;
 use crate::kinect::KinectSensor;
@@ -203,7 +203,7 @@ impl Body {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_TrackingId.ok_or(E_FAIL)?;
-        let mut tracking_id: crate::bindings::UINT64 = 0;
+        let mut tracking_id: bindings::UINT64 = 0;
         let hr = unsafe { get_fn(self.ptr, &mut tracking_id) };
         if hr.is_ok() {
             Ok(tracking_id)
@@ -242,13 +242,13 @@ impl Body {
         }
     }
 
-    pub fn get_lean(&self) -> Result<crate::bindings::PointF, Error> {
+    pub fn get_lean(&self) -> Result<bindings::PointF, Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_Lean.ok_or(E_FAIL)?;
-        let mut amount: crate::bindings::PointF = unsafe { std::mem::zeroed() };
+        let mut amount: bindings::PointF = unsafe { std::mem::zeroed() };
         let hr = unsafe { get_fn(self.ptr, &mut amount) };
         if hr.is_ok() {
             Ok(amount)
@@ -257,13 +257,13 @@ impl Body {
         }
     }
 
-    pub fn get_lean_tracking_state(&self) -> Result<crate::bindings::TrackingState, Error> {
+    pub fn get_lean_tracking_state(&self) -> Result<bindings::TrackingState, Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_LeanTrackingState.ok_or(E_FAIL)?;
-        let mut tracking_state: crate::bindings::TrackingState = unsafe { std::mem::zeroed() };
+        let mut tracking_state: bindings::TrackingState = unsafe { std::mem::zeroed() };
         let hr = unsafe { get_fn(self.ptr, &mut tracking_state) };
         if hr.is_ok() {
             Ok(tracking_state)
@@ -304,7 +304,7 @@ impl BodyHandPair {
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_BodyTrackingId.ok_or(E_FAIL)?;
-        let mut value: crate::bindings::UINT64 = 0;
+        let mut value: bindings::UINT64 = 0;
         let hr = unsafe { get_fn(self.ptr, &mut value) };
         if hr.is_ok() {
             Ok(value)
@@ -327,13 +327,13 @@ impl BodyHandPair {
         }
     }
 
-    pub fn get_hand_type(&self) -> Result<crate::bindings::HandType, Error> {
+    pub fn get_hand_type(&self) -> Result<HandType, Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_HandType.ok_or(E_FAIL)?;
-        let mut value: crate::bindings::HandType = unsafe { std::mem::zeroed() };
+        let mut value: HandType = unsafe { std::mem::zeroed() };
         let hr = unsafe { get_fn(self.ptr, &mut value) };
         if hr.is_ok() {
             Ok(value)
@@ -342,7 +342,7 @@ impl BodyHandPair {
         }
     }
 
-    pub fn put_hand_type(&self, value: crate::bindings::HandType) -> Result<(), Error> {
+    pub fn put_hand_type(&self, value: HandType) -> Result<(), Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
@@ -756,13 +756,13 @@ impl BodyFrame {
         Self { ptr }
     }
 
-    pub fn get_floor_clip_plane(&self) -> Result<crate::bindings::Vector4, Error> {
+    pub fn get_floor_clip_plane(&self) -> Result<bindings::Vector4, Error> {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let get_fn = vtbl.get_FloorClipPlane.ok_or(E_FAIL)?;
-        let mut floor_clip_plane: crate::bindings::Vector4 = unsafe { std::mem::zeroed() };
+        let mut floor_clip_plane: bindings::Vector4 = unsafe { std::mem::zeroed() };
         let hr = unsafe { get_fn(self.ptr, &mut floor_clip_plane) };
         if hr.is_ok() {
             Ok(floor_clip_plane)
@@ -888,5 +888,22 @@ impl Drop for BodyFrameArrivedEventArgs {
             }
             self.ptr = ptr::null_mut();
         }
+    }
+}
+
+pub fn create_body_hand_pair(
+    body_tracking_id: u64,
+    hand_type: HandType,
+) -> Result<BodyHandPair, Error> {
+    let mut pair_ptr: *mut IBodyHandPair = ptr::null_mut();
+    let hr = unsafe { CreateBodyHandPair(body_tracking_id, hand_type, &mut pair_ptr) };
+    if hr.is_ok() {
+        if pair_ptr.is_null() {
+            Err(Error::from_hresult(E_POINTER))
+        } else {
+            Ok(BodyHandPair::new(pair_ptr))
+        }
+    } else {
+        Err(Error::from_hresult(hr))
     }
 }
