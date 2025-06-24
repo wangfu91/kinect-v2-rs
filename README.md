@@ -5,6 +5,20 @@
 
 A Rust binding for the Kinect V2 Windows SDK. This project enables you to access Kinect V2 sensor data (color, depth, infrared, body, audio, etc.) from Rust on Windows.
 
+## TODOs 📝
+- [x] Implement color frame capture
+- [x] Implement depth frame capture
+- [x] Implement infrared frame capture
+- [x] Implement body frame capture
+- [x] Implement audio frame capture
+- [x] Implement multi-source frame capture
+- [ ] Add more examples and documentation
+- [ ] Improve error handling and safety
+- [ ] Add tests for all features
+- [ ] Implement face related features
+- [ ] Implement gesture recognition features
+- [ ] Cross-platform support using the libfreenect2 library
+
 ## Features ✨
 - Safe and idiomatic Rust API for Kinect V2
 - Access to color, depth, infrared, body, audio, and multi-source frames
