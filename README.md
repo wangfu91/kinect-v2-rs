@@ -1,6 +1,13 @@
 # Kinect V2 Rust Bindings 🦀🎮
 
+kinect-v2: <br />
 [![Crates.io](https://img.shields.io/crates/v/kinect-v2.svg)](https://crates.io/crates/kinect-v2)
+[![Docs](https://docs.rs/kinect-v2/badge.svg)](https://docs.rs/kinect-v2)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+kinect-v2-sys: <br />
+[![Crates.io](https://img.shields.io/crates/v/kinect-v2-sys.svg)](https://crates.io/crates/kinect-v2-sys)
+[![Docs](https://docs.rs/kinect-v2-sys/badge.svg)](https://docs.rs/kinect-v2-sys)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A Rust binding for the Kinect V2 Windows SDK. This project enables you to access Kinect V2 sensor data (color, depth, infrared, body, audio, etc.) from Rust on Windows.
@@ -15,7 +22,7 @@ A Rust binding for the Kinect V2 Windows SDK. This project enables you to access
 - [ ] Add more examples and documentation
 - [ ] Improve error handling and safety
 - [ ] Add tests for all features
-- [ ] Publish to crates.io
+- [x] Publish to crates.io
 - [ ] Implement face related features
 - [ ] Implement gesture recognition features
 - [ ] Cross-platform support using the libfreenect2 library
