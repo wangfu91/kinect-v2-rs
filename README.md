@@ -10,22 +10,13 @@ kinect-v2-sys: <br />
 [![Docs](https://docs.rs/kinect-v2-sys/badge.svg)](https://docs.rs/kinect-v2-sys)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A Rust binding for the Kinect V2 Windows SDK. This project enables you to access Kinect V2 sensor data (color, depth, infrared, body, audio, etc.) from Rust on Windows.
+---
 
-## TODOs 📝
-- [x] Implement color frame capture
-- [x] Implement depth frame capture
-- [x] Implement infrared frame capture
-- [x] Implement body frame capture
-- [x] Implement audio frame capture
-- [x] Implement multi-source frame capture
-- [ ] Add more examples and documentation
-- [ ] Improve error handling and safety
-- [ ] Add tests for all features
-- [x] Publish to crates.io
-- [ ] Implement face related features
-- [ ] Implement gesture recognition features
-- [ ] Cross-platform support using the libfreenect2 library
+**Kinect V2 Rust Bindings** provide safe and idiomatic Rust access to the Kinect V2 Windows SDK, enabling you to capture color, depth, infrared, body, audio, and multi-source frames from your Kinect V2 sensor on Windows.
+
+> **Note:** This project currently supports **Windows** only, as the official Kinect V2 SDK is Windows-exclusive.
+
+---
 
 ## Features ✨
 - Safe and idiomatic Rust API for Kinect V2
@@ -36,7 +27,7 @@ A Rust binding for the Kinect V2 Windows SDK. This project enables you to access
 ## Requirements ⚠️
 - **Windows** (Kinect V2 SDK is Windows-only)
 - Kinect V2 sensor and adapter
-- Kinect for Windows SDK 2.0 installed
+- [Kinect for Windows SDK 2.0](https://www.microsoft.com/en-us/download/details.aspx?id=44561) installed
 - Rust 1.70+ (2024 edition)
 
 ## Getting Started 🚀
@@ -51,24 +42,25 @@ kinect-v2 = "0.1" # Replace with the latest version
 ## Example Usage 📝
 
 ```rust
-use kinect_v2::color_capture::ColorCapture;
+use kinect_v2::color_capture::ColorFrameCapture;
 
-fn main() {
-    let color_capture = color_capture::ColorFrameCapture::new().unwrap();
-    for frame_result in color_capture.iter().unwrap() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let color_capture = ColorFrameCapture::new()?;
+    for frame_result in color_capture.iter()? {
         match frame_result {
             Ok(frame_data) => {
-                println!("Color frame size: {}x{}", frame_data.width, frame_data.height);
+                println!("Color frame size: {}x{}, bytes: {}", frame_data.width, frame_data.height, frame_data.bytes.len());
             }
             Err(e) => {
-                eprintln!("Error capturing color frame: {}", e);
+                return Err(Box::new(e));
             }
         }
     }
+    Ok(())
 }
 ```
 
-More examples can be found in the `examples/` directory.
+> More examples can be found in the [`examples/`](./kinect-v2/examples/) directory.
 
 ## Building 🛠️
 
@@ -82,8 +74,23 @@ $ cargo build --release
 ```
 
 ## Project Structure 📁
-- `kinect-v2/` — Idiomatic Rust wrapper
-- `kinect-v2-sys/` — Safe Rust API and raw FFI bindings
+- `kinect-v2/` — High-level, idiomatic Rust wrapper
+- `kinect-v2-sys/` — Low-level FFI bindings to the Kinect V2 SDK
+
+## Roadmap 🗺️
+- [x] Implement color frame capture
+- [x] Implement depth frame capture
+- [x] Implement infrared frame capture
+- [x] Implement body frame capture
+- [x] Implement audio frame capture
+- [x] Implement multi-source frame capture
+- [x] Publish to crates.io
+- [ ] Add more examples and documentation
+- [ ] Improve error handling and safety
+- [ ] Add tests for all features
+- [ ] Implement face detection features
+- [ ] Implement gesture recognition features
+- [ ] Cross-platform support using the [libfreenect2](https://github.com/OpenKinect/libfreenect2) library
 
 ## License 📄
 
