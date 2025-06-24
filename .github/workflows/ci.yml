@@ -1,0 +1,29 @@
+# This workflow builds both crates (kinect-v2 and kinect-v2-sys) on push and PRs to main
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        crate:
+          - kinect-v2
+          - kinect-v2-sys
+    defaults:
+      run:
+        working-directory: ${{ matrix.crate }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build ${{ matrix.crate }}
+        run: cargo build --verbose
