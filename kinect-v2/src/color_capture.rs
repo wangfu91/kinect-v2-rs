@@ -172,3 +172,83 @@ impl Default for ColorFrameData {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::sync::mpsc;
+
+    use anyhow::anyhow;
+
+    use super::*;
+
+    #[test]
+    fn color_capture_test() -> anyhow::Result<()> {
+        let (color_tx, color_rx) = mpsc::channel::<ColorFrameData>();
+        let max_frames_to_capture = 10;
+        let color_capture_thread = std::thread::spawn(move || -> anyhow::Result<()> {
+            let color_capture = ColorFrameCapture::new()?;
+            for (frame_count, frame) in color_capture.iter()?.enumerate() {
+                if frame_count >= max_frames_to_capture {
+                    break;
+                }
+                let data = frame.map_err(|e| anyhow!("Error capturing color frame: {}", e))?;
+                if color_tx.send(data).is_err() {
+                    // Receiver dropped, exit thread
+                    break;
+                }
+            }
+            Ok(())
+        });
+
+        let processing_thread = std::thread::spawn(move || -> anyhow::Result<()> {
+            for _ in 0..max_frames_to_capture {
+                let frame_data = match color_rx.recv() {
+                    Ok(data) => data,
+                    Err(_) => break,
+                };
+                println!(
+                    "Received color frame: {}x{}, {} bytes, timestamp: {}, format: {:?}, bytes_per_pixel: {}",
+                    frame_data.width,
+                    frame_data.height,
+                    frame_data.data.len(),
+                    frame_data.timestamp,
+                    frame_data.image_format,
+                    frame_data.bytes_per_pixel
+                );
+
+                anyhow::ensure!(
+                    frame_data.width == 1920,
+                    "Unexpected width: {}",
+                    frame_data.width
+                );
+                anyhow::ensure!(
+                    frame_data.height == 1080,
+                    "Unexpected height: {}",
+                    frame_data.height
+                );
+                anyhow::ensure!(
+                    [2, 4].contains(&frame_data.bytes_per_pixel),
+                    "Unexpected bytes_per_pixel: {}",
+                    frame_data.bytes_per_pixel
+                );
+                anyhow::ensure!(!frame_data.data.is_empty(), "Frame data is empty");
+                anyhow::ensure!(frame_data.timestamp > 0, "Timestamp is not positive");
+                anyhow::ensure!(
+                    frame_data.fps == KINECT_DEFAULT_CAPTURE_FPS,
+                    "Unexpected FPS: {}",
+                    frame_data.fps
+                );
+            }
+            Ok(())
+        });
+
+        color_capture_thread
+            .join()
+            .map_err(|e| anyhow!("Color capture thread join error: {:?}", e))??;
+        processing_thread
+            .join()
+            .map_err(|e| anyhow!("Processing thread join error: {:?}", e))??;
+
+        Ok(())
+    }
+}
