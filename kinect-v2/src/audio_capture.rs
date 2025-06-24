@@ -207,3 +207,56 @@ impl Default for AudioFrameData {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use anyhow::anyhow;
+    use std::sync::mpsc;
+
+    #[test]
+    fn audio_capture_test() -> anyhow::Result<()> {
+        let (audio_tx, audio_rx) = mpsc::channel::<AudioFrameData>();
+        let max_frames_to_capture = 10;
+        let audio_capture_thread = std::thread::spawn(move || -> anyhow::Result<()> {
+            let audio_capture = AudioFrameCapture::new()?;
+            for (frame_count, frame) in audio_capture.iter()?.enumerate() {
+                if frame_count >= max_frames_to_capture {
+                    break;
+                }
+                let data = frame.map_err(|e| anyhow!("Error capturing audio frame: {}", e))?;
+                if audio_tx.send(data).is_err() {
+                    break;
+                }
+            }
+            Ok(())
+        });
+
+        let processing_thread = std::thread::spawn(move || -> anyhow::Result<()> {
+            for _ in 0..max_frames_to_capture {
+                let frame_data = match audio_rx.recv() {
+                    Ok(data) => data,
+                    Err(_) => break,
+                };
+                println!(
+                    "Received audio frame: timestamp: {}, beam_angle: {}, confidence: {}, data_len: {}",
+                    frame_data.timestamp,
+                    frame_data.beam_angle,
+                    frame_data.beam_angle_confidence,
+                    frame_data.data.len()
+                );
+                anyhow::ensure!(!frame_data.data.is_empty(), "Audio data is empty");
+                anyhow::ensure!(frame_data.timestamp > 0, "Timestamp is not positive");
+            }
+            Ok(())
+        });
+
+        audio_capture_thread
+            .join()
+            .map_err(|e| anyhow!("Audio capture thread join error: {:?}", e))??;
+        processing_thread
+            .join()
+            .map_err(|e| anyhow!("Processing thread join error: {:?}", e))??;
+        Ok(())
+    }
+}

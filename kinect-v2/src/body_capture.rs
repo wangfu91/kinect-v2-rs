@@ -247,3 +247,53 @@ impl BodyFrameData {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use anyhow::anyhow;
+    use std::sync::mpsc;
+
+    #[test]
+    fn body_capture_test() -> anyhow::Result<()> {
+        let (body_tx, body_rx) = mpsc::channel::<BodyFrameData>();
+        let max_frames_to_capture = 10;
+        let body_capture_thread = std::thread::spawn(move || -> anyhow::Result<()> {
+            let body_capture = BodyFrameCapture::new()?;
+            for (frame_count, frame) in body_capture.iter()?.enumerate() {
+                if frame_count >= max_frames_to_capture {
+                    break;
+                }
+                let data = frame.map_err(|e| anyhow!("Error capturing body frame: {}", e))?;
+                if body_tx.send(data).is_err() {
+                    break;
+                }
+            }
+            Ok(())
+        });
+
+        let processing_thread = std::thread::spawn(move || -> anyhow::Result<()> {
+            for _ in 0..max_frames_to_capture {
+                let frame_data = match body_rx.recv() {
+                    Ok(data) => data,
+                    Err(_) => break,
+                };
+                println!(
+                    "Received body frame: timestamp: {}, body_count: {}",
+                    frame_data.timestamp, frame_data.body_count
+                );
+                anyhow::ensure!(frame_data.body_count > 0, "No bodies detected");
+                anyhow::ensure!(frame_data.timestamp > 0, "Timestamp is not positive");
+            }
+            Ok(())
+        });
+
+        body_capture_thread
+            .join()
+            .map_err(|e| anyhow!("Body capture thread join error: {:?}", e))??;
+        processing_thread
+            .join()
+            .map_err(|e| anyhow!("Processing thread join error: {:?}", e))??;
+        Ok(())
+    }
+}

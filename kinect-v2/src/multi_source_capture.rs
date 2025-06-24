@@ -189,3 +189,53 @@ impl MultiSourceFrameData {
         BodyFrameData::new(&body_frame).ok()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::sync::mpsc;
+    use anyhow::anyhow;
+    use super::*;
+
+    #[test]
+    fn multi_source_capture_test() -> anyhow::Result<()> {
+        let (tx, rx) = mpsc::channel::<MultiSourceFrameData>();
+        let max_frames_to_capture = 10;
+        let capture_thread = std::thread::spawn(move || -> anyhow::Result<()> {
+            let capture = MultiSourceCapture::new()?;
+            for (frame_count, frame) in capture.iter()?.enumerate() {
+                if frame_count >= max_frames_to_capture {
+                    break;
+                }
+                let data = frame.map_err(|e| anyhow!("Error capturing multi-source frame: {}", e))?;
+                if tx.send(data).is_err() {
+                    break;
+                }
+            }
+            Ok(())
+        });
+
+        let processing_thread = std::thread::spawn(move || -> anyhow::Result<()> {
+            for _ in 0..max_frames_to_capture {
+                let frame_data = match rx.recv() {
+                    Ok(data) => data,
+                    Err(_) => break,
+                };
+                println!("Received multi-source frame");
+                // Validate at least one frame type is present
+                anyhow::ensure!(
+                    frame_data.color_frame.is_some() ||
+                    frame_data.depth_frame.is_some() ||
+                    frame_data.infrared_frame.is_some() ||
+                    frame_data.body_index_frame.is_some() ||
+                    frame_data.body_frame.is_some(),
+                    "No frame data present in multi-source frame"
+                );
+            }
+            Ok(())
+        });
+
+        capture_thread.join().map_err(|e| anyhow!("Multi-source capture thread join error: {:?}", e))??;
+        processing_thread.join().map_err(|e| anyhow!("Processing thread join error: {:?}", e))??;
+        Ok(())
+    }
+}

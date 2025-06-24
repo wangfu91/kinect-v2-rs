@@ -199,3 +199,56 @@ impl Default for InfraredFrameData {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::sync::mpsc;
+    use anyhow::anyhow;
+    use super::*;
+
+    #[test]
+    fn infrared_capture_test() -> anyhow::Result<()> {
+        let (tx, rx) = mpsc::channel::<InfraredFrameData>();
+        let max_frames_to_capture = 10;
+        let capture_thread = std::thread::spawn(move || -> anyhow::Result<()> {
+            let capture = InfraredFrameCapture::new()?;
+            for (frame_count, frame) in capture.iter()?.enumerate() {
+                if frame_count >= max_frames_to_capture {
+                    break;
+                }
+                let data = frame.map_err(|e| anyhow!("Error capturing infrared frame: {}", e))?;
+                if tx.send(data).is_err() {
+                    break;
+                }
+            }
+            Ok(())
+        });
+
+        let processing_thread = std::thread::spawn(move || -> anyhow::Result<()> {
+            for _ in 0..max_frames_to_capture {
+                let frame_data = match rx.recv() {
+                    Ok(data) => data,
+                    Err(_) => break,
+                };
+                println!(
+                    "Received infrared frame: {}x{}, {} values, timestamp: {}, fps: {}",
+                    frame_data.width,
+                    frame_data.height,
+                    frame_data.data.len(),
+                    frame_data.timestamp,
+                    frame_data.fps
+                );
+                anyhow::ensure!(frame_data.width > 0, "Unexpected width: {}", frame_data.width);
+                anyhow::ensure!(frame_data.height > 0, "Unexpected height: {}", frame_data.height);
+                anyhow::ensure!(!frame_data.data.is_empty(), "Frame data is empty");
+                anyhow::ensure!(frame_data.timestamp > 0, "Timestamp is not positive");
+                anyhow::ensure!(frame_data.fps > 0, "FPS is not positive");
+            }
+            Ok(())
+        });
+
+        capture_thread.join().map_err(|e| anyhow!("Infrared capture thread join error: {:?}", e))??;
+        processing_thread.join().map_err(|e| anyhow!("Processing thread join error: {:?}", e))??;
+        Ok(())
+    }
+}
