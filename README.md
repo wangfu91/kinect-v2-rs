@@ -15,6 +15,7 @@ A Rust binding for the Kinect V2 Windows SDK. This project enables you to access
 - [ ] Add more examples and documentation
 - [ ] Improve error handling and safety
 - [ ] Add tests for all features
+- [ ] Publish to crates.io
 - [ ] Implement face related features
 - [ ] Implement gesture recognition features
 - [ ] Cross-platform support using the libfreenect2 library
