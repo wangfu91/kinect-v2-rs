@@ -83,10 +83,7 @@ impl<'a> Drop for BodyIndexFrameCaptureIter<'a> {
         // Best effort to unsubscribe from the frame arrived event.
         // Errors in `drop` are typically logged or ignored, as panicking in drop is problematic.
         if let Err(e) = self.reader.unsubscribe_frame_arrived(self.waitable_handle) {
-            log::warn!(
-                "Failed to unsubscribe body index frame arrived event: {:?}",
-                e
-            );
+            log::warn!("Failed to unsubscribe body index frame arrived event: {e:?}");
         }
     }
 }
@@ -259,9 +256,9 @@ impl Default for BodyIndexFrameData {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::mpsc;
-    use anyhow::anyhow;
     use super::*;
+    use anyhow::anyhow;
+    use std::sync::mpsc;
 
     #[test]
     fn body_index_capture_test() -> anyhow::Result<()> {
@@ -294,16 +291,28 @@ mod tests {
                     frame_data.data.len(),
                     frame_data.timestamp
                 );
-                anyhow::ensure!(frame_data.width > 0, "Unexpected width: {}", frame_data.width);
-                anyhow::ensure!(frame_data.height > 0, "Unexpected height: {}", frame_data.height);
+                anyhow::ensure!(
+                    frame_data.width > 0,
+                    "Unexpected width: {}",
+                    frame_data.width
+                );
+                anyhow::ensure!(
+                    frame_data.height > 0,
+                    "Unexpected height: {}",
+                    frame_data.height
+                );
                 anyhow::ensure!(!frame_data.data.is_empty(), "Frame data is empty");
                 anyhow::ensure!(frame_data.timestamp > 0, "Timestamp is not positive");
             }
             Ok(())
         });
 
-        capture_thread.join().map_err(|e| anyhow!("Body index capture thread join error: {:?}", e))??;
-        processing_thread.join().map_err(|e| anyhow!("Processing thread join error: {:?}", e))??;
+        capture_thread
+            .join()
+            .map_err(|e| anyhow!("Body index capture thread join error: {:?}", e))??;
+        processing_thread
+            .join()
+            .map_err(|e| anyhow!("Processing thread join error: {:?}", e))??;
         Ok(())
     }
 }

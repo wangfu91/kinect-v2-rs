@@ -83,7 +83,7 @@ impl<'a> Drop for ColorFrameCaptureIter<'a> {
         // Best effort to unsubscribe from the frame arrived event.
         // Errors in `drop` are typically logged or ignored, as panicking in drop is problematic.
         if let Err(e) = self.reader.unsubscribe_frame_arrived(self.waitable_handle) {
-            log::warn!("Failed to unsubscribe color frame arrived event: {:?}", e);
+            log::warn!("Failed to unsubscribe color frame arrived event: {e:?}");
         }
     }
 }

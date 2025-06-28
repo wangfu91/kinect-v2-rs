@@ -86,10 +86,7 @@ impl<'a> Drop for MultiSourceCaptureIter<'a> {
             .reader
             .unsubscribe_multi_source_frame_arrived(self.waitable_handle)
         {
-            log::warn!(
-                "Failed to unsubscribe multi-source frame arrived event: {:?}",
-                e
-            );
+            log::warn!("Failed to unsubscribe multi-source frame arrived event: {e:?}");
         }
     }
 }
@@ -192,9 +189,9 @@ impl MultiSourceFrameData {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::mpsc;
-    use anyhow::anyhow;
     use super::*;
+    use anyhow::anyhow;
+    use std::sync::mpsc;
 
     #[test]
     fn multi_source_capture_test() -> anyhow::Result<()> {
@@ -206,7 +203,8 @@ mod tests {
                 if frame_count >= max_frames_to_capture {
                     break;
                 }
-                let data = frame.map_err(|e| anyhow!("Error capturing multi-source frame: {}", e))?;
+                let data =
+                    frame.map_err(|e| anyhow!("Error capturing multi-source frame: {}", e))?;
                 if tx.send(data).is_err() {
                     break;
                 }
@@ -223,19 +221,23 @@ mod tests {
                 println!("Received multi-source frame");
                 // Validate at least one frame type is present
                 anyhow::ensure!(
-                    frame_data.color_frame.is_some() ||
-                    frame_data.depth_frame.is_some() ||
-                    frame_data.infrared_frame.is_some() ||
-                    frame_data.body_index_frame.is_some() ||
-                    frame_data.body_frame.is_some(),
+                    frame_data.color_frame.is_some()
+                        || frame_data.depth_frame.is_some()
+                        || frame_data.infrared_frame.is_some()
+                        || frame_data.body_index_frame.is_some()
+                        || frame_data.body_frame.is_some(),
                     "No frame data present in multi-source frame"
                 );
             }
             Ok(())
         });
 
-        capture_thread.join().map_err(|e| anyhow!("Multi-source capture thread join error: {:?}", e))??;
-        processing_thread.join().map_err(|e| anyhow!("Processing thread join error: {:?}", e))??;
+        capture_thread
+            .join()
+            .map_err(|e| anyhow!("Multi-source capture thread join error: {:?}", e))??;
+        processing_thread
+            .join()
+            .map_err(|e| anyhow!("Processing thread join error: {:?}", e))??;
         Ok(())
     }
 }
