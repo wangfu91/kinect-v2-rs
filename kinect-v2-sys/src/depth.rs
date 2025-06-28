@@ -642,7 +642,7 @@ mod tests {
             } else if result == WAIT_TIMEOUT {
                 println!("No new depth frame arrived within the timeout period");
             } else {
-                eprintln!("Error waiting for depth frame: {:?}", result);
+                eprintln!("Error waiting for depth frame: {result:?}");
                 break;
             }
         }

@@ -766,7 +766,7 @@ mod tests {
                 assert!(rel_time > 0);
                 assert_eq!(bytes_per_pixel, 2);
                 let image_format = color_frame.get_raw_color_image_format()?;
-                println!("Color image format: {:?}", image_format);
+                println!("Color image format: {image_format:?}");
                 let capacity = width * height * bytes_per_pixel;
                 let mut frame_data: Vec<u8> = vec![0; capacity as usize];
                 color_frame

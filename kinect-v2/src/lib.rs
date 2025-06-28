@@ -32,7 +32,7 @@ mod tests {
                         audio_tx.send(data).unwrap();
                     }
                     Err(e) => {
-                        eprintln!("Error capturing audio frame: {}", e);
+                        eprintln!("Error capturing audio frame: {e}");
                     }
                 }
             }

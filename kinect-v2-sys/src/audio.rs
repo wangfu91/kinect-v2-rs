@@ -1137,8 +1137,7 @@ mod tests {
                     let relative_time = audio_beam.get_relative_time()?;
 
                     println!(
-                        "AudioFrame Duration: {}, SubFrameCount:{}, Beam Angle: {}, Confidence: {}, Relative Time: {}",
-                        duration, sub_frame_count, beam_angle, beam_angle_confidence, relative_time
+                        "AudioFrame Duration: {duration}, SubFrameCount:{sub_frame_count}, Beam Angle: {beam_angle}, Confidence: {beam_angle_confidence}, Relative Time: {relative_time}"
                     );
 
                     assert!(
@@ -1209,13 +1208,7 @@ mod tests {
                 let relative_time = audio_beam.get_relative_time()?;
 
                 println!(
-                    "AudioFrame Duration ticks: {}, SubFrameCount:{}, Beam Mode: {:?}, Beam Angle: {}, Confidence: {}, Relative Time: {}",
-                    duration,
-                    sub_frame_count,
-                    beam_mode,
-                    beam_angle,
-                    beam_angle_confidence,
-                    relative_time
+                    "AudioFrame Duration ticks: {duration}, SubFrameCount:{sub_frame_count}, Beam Mode: {beam_mode:?}, Beam Angle: {beam_angle}, Confidence: {beam_angle_confidence}, Relative Time: {relative_time}"
                 );
 
                 assert!(
