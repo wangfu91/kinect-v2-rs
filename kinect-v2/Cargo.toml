@@ -1,6 +1,6 @@
 [package]
 name = "kinect-v2"
-version = "0.1.0"
+version = "0.1.1"
 edition.workspace = true
 authors.workspace = true
 description.workspace = true
@@ -13,10 +13,10 @@ readme.workspace = true
 [dependencies]
 log.workspace = true
 windows = { workspace = true, features = [
-    "Win32_Foundation", 
+    "Win32_Foundation",
     "Win32_System_Threading",
-]}
-kinect-v2-sys = { path= "../kinect-v2-sys" , version="0.1.0" }
+] }
+kinect-v2-sys = { path = "../kinect-v2-sys", version = "0.1.1" }
 
 [dev-dependencies]
 anyhow.workspace = true

@@ -98,7 +98,7 @@ dependencies = [
 
 [[package]]
 name = "kinect-v2"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "hound",
@@ -109,7 +109,7 @@ dependencies = [
 
 [[package]]
 name = "kinect-v2-sys"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "bindgen",
