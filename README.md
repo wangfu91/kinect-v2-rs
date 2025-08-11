@@ -14,7 +14,7 @@ kinect-v2-sys: <br />
 
 **Kinect V2 Rust Bindings** provide safe and idiomatic Rust access to the Kinect V2 Windows SDK, enabling you to capture color, depth, infrared, body, audio, and multi-source frames from your Kinect V2 sensor on Windows.
 
-> **Note:** This project currently supports **Windows** only. It uses the official Kinect V2 SDK, which is not available on other platforms. Future plans include cross-platform support using the [libfreenect2](https://github.com/OpenKinect/libfreenect2) library.
+> **Note:** This project currently supports **Windows** only. It uses the official Kinect V2 SDK, which is not available on other platforms. ~~Future plans include cross-platform support using the [libfreenect2](https://github.com/OpenKinect/libfreenect2) library.~~
 
 ---
 
@@ -88,9 +88,10 @@ $ cargo build --release
 - [ ] Add more examples and documentation
 - [ ] Improve error handling and safety
 - [ ] Add tests for all features
-- [ ] Implement face detection features
-- [ ] Implement gesture recognition features
-- [ ] Cross-platform support using the [libfreenect2](https://github.com/OpenKinect/libfreenect2) library
+### Not Planned
+- [ ] ~~Implement face detection features~~
+- [ ] ~~Implement gesture recognition features~~
+- [ ] ~~Cross-platform support using the [libfreenect2](https://github.com/OpenKinect/libfreenect2) library~~
 
 ## License 📄
 
