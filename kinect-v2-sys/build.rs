@@ -1,6 +1,8 @@
 use std::path::Path;
 
 fn main() {
+    // Make sure to have the Kinect V2 SDK installed first.
+    // You can download the SDK from: https://www.microsoft.com/en-us/download/details.aspx?id=44561
     let kinect_sdk_path = Path::new("C:\\Program Files\\Microsoft SDKs\\Kinect\\v2.0_1409");
     #[cfg(target_arch = "x86")]
     let lib_path = kinect_sdk_path.join("Lib").join("x86");
@@ -15,6 +17,7 @@ fn main() {
  *
  * Use the following code to generate bindings for the Kinect V2 SDK on the fly.
  * Make sure to have the Kinect V2 SDK installed first.
+ * You can download the SDK from: https://www.microsoft.com/en-us/download/details.aspx?id=44561
  *
 extern crate bindgen;
 fn main() {
