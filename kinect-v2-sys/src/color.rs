@@ -10,7 +10,7 @@ use crate::{
 };
 use std::ptr;
 use windows::{
-    Win32::Foundation::{E_FAIL, E_POINTER},
+    Win32::Foundation::{E_FAIL, E_INVALIDARG, E_POINTER},
     core::Error,
 };
 
@@ -98,10 +98,25 @@ impl ColorFrame {
         if self.ptr.is_null() {
             return Err(Error::from_hresult(E_POINTER));
         }
+        // Validate inputs according to API contract
+        if frame_data.is_empty() || matches!(color_format, ColorImageFormat::None) {
+            return Err(Error::from_hresult(E_INVALIDARG));
+        }
         let vtbl = unsafe { (*self.ptr).lpVtbl.as_ref() }.ok_or(E_POINTER)?;
         let copy_fn = vtbl.CopyConvertedFrameDataToArray.ok_or(E_FAIL)?;
-        let capacity = frame_data.len() as u32;
-        let hr = unsafe { copy_fn(self.ptr, capacity, frame_data.as_mut_ptr(), color_format) };
+
+        // 'capacity' is an INPUT parameter specifying the size of the buffer.
+        let capacity =
+            u32::try_from(frame_data.len()).map_err(|_| Error::from_hresult(E_INVALIDARG))?;
+
+        let hr = unsafe {
+            copy_fn(
+                self.ptr,
+                capacity, // Pass the buffer size by value
+                frame_data.as_mut_ptr(),
+                color_format,
+            )
+        };
         if hr.is_ok() {
             Ok(())
         } else {
