@@ -14,8 +14,7 @@ use windows::{Win32::Foundation::WAIT_EVENT, core::Error};
 /// This struct is responsible for initializing and holding the necessary Kinect
 /// resources to capture infrared frames.
 pub struct InfraredFrameCapture {
-    _kinect: KinectSensor,       // keep the kinect sensor instance alive.
-    reader: InfraredFrameReader, // Used to read infrared frames.
+    kinect: KinectSensor, // keep the kinect sensor instance alive.
 }
 
 impl InfraredFrameCapture {
@@ -32,19 +31,7 @@ impl InfraredFrameCapture {
         let kinect = kinect::get_default_kinect_sensor()?;
         kinect.open()?;
 
-        let source = kinect.infrared_frame_source()?;
-        let reader = source.open_reader()?;
-
-        // Ensure the infrared frame source is active.
-        // If not, event subscription and frame acquisition might fail.
-        if !source.get_is_active()? {
-            return Err(Error::from_hresult(E_FAIL));
-        }
-
-        Ok(InfraredFrameCapture {
-            _kinect: kinect,
-            reader,
-        })
+        Ok(InfraredFrameCapture { kinect })
     }
 
     /// Returns an iterator over infrared frames.
@@ -57,10 +44,22 @@ impl InfraredFrameCapture {
     ///
     /// Returns an error if it fails to subscribe to the frame arrived event,
     /// which is necessary for the iterator to function.
-    pub fn iter<'a>(&'a self) -> Result<InfraredFrameCaptureIter<'a>, Error> {
-        let waitable_handle = self.reader.subscribe_frame_arrived()?;
+    pub fn iter(&self) -> Result<InfraredFrameCaptureIter, Error> {
+        let source = self.kinect.infrared_frame_source()?;
+        // Open the reader to activate the source.
+        let reader = source.open_reader()?;
+        // Ensure the infrared frame source is active.
+        // If not, event subscription and frame acquisition might fail.
+        if !source.get_is_active()? {
+            log::warn!(
+                "Infrared frame source is not active, cannot subscribe to frame arrived event."
+            );
+            return Err(Error::from_hresult(E_FAIL));
+        }
+
+        let waitable_handle = reader.subscribe_frame_arrived()?;
         Ok(InfraredFrameCaptureIter {
-            reader: &self.reader,
+            reader,
             waitable_handle,
             timeout_ms: DEFAULT_FRAME_WAIT_TIMEOUT_MS,
         })
@@ -71,13 +70,13 @@ impl InfraredFrameCapture {
 ///
 /// This iterator blocks until a new frame is available or an error occurs.
 /// It is created by calling the `iter` method on `InfraredFrameCapture`.
-pub struct InfraredFrameCaptureIter<'a> {
-    reader: &'a InfraredFrameReader,
+pub struct InfraredFrameCaptureIter {
+    reader: InfraredFrameReader,
     waitable_handle: WAITABLE_HANDLE,
     timeout_ms: u32,
 }
 
-impl<'a> Drop for InfraredFrameCaptureIter<'a> {
+impl Drop for InfraredFrameCaptureIter {
     fn drop(&mut self) {
         // Best effort to unsubscribe from the frame arrived event.
         // Errors in `drop` are typically logged or ignored, as panicking in drop is problematic.
@@ -87,7 +86,7 @@ impl<'a> Drop for InfraredFrameCaptureIter<'a> {
     }
 }
 
-impl<'a> Iterator for InfraredFrameCaptureIter<'a> {
+impl Iterator for InfraredFrameCaptureIter {
     type Item = Result<InfraredFrameData, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {

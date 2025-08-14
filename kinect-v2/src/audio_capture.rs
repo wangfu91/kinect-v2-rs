@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use kinect_v2_sys::{
     DEFAULT_FRAME_WAIT_TIMEOUT_MS, WAITABLE_HANDLE,
-    audio::{AudioBeamFrameList, AudioBeamFrameReader, AudioSource},
+    audio::{AudioBeamFrameList, AudioBeamFrameReader},
     kinect::{self, KinectSensor},
 };
 use windows::Win32::Foundation::{E_FAIL, WAIT_OBJECT_0, WAIT_TIMEOUT};
@@ -14,9 +14,7 @@ use windows::{Win32::Foundation::WAIT_EVENT, core::Error};
 /// This struct is responsible for initializing and holding the necessary Kinect
 /// resources to capture audio frames from audio beams.
 pub struct AudioFrameCapture {
-    _kinect: KinectSensor,        // keep the kinect sensor instance alive.
-    reader: AudioBeamFrameReader, // Used to read audio beam frames.
-    audio_source: AudioSource,    // Audio source for configuration.
+    kinect: KinectSensor, // keep the kinect sensor instance alive.
 }
 
 impl AudioFrameCapture {
@@ -33,20 +31,7 @@ impl AudioFrameCapture {
         let kinect = kinect::get_default_kinect_sensor()?;
         kinect.open()?;
 
-        let audio_source = kinect.audio_source()?;
-        let reader = audio_source.open_reader()?;
-
-        // Ensure the audio source is active.
-        // If not, event subscription and frame acquisition might fail.
-        if !audio_source.get_is_active()? {
-            return Err(Error::from_hresult(E_FAIL));
-        }
-
-        Ok(AudioFrameCapture {
-            _kinect: kinect,
-            reader,
-            audio_source,
-        })
+        Ok(AudioFrameCapture { kinect })
     }
 
     /// Returns an iterator over audio frames.
@@ -59,18 +44,23 @@ impl AudioFrameCapture {
     ///
     /// Returns an error if it fails to subscribe to the frame arrived event,
     /// which is necessary for the iterator to function.
-    pub fn iter<'a>(&'a self) -> Result<AudioFrameCaptureIter<'a>, Error> {
-        let waitable_handle = self.reader.subscribe_frame_arrived()?;
+    pub fn iter(&self) -> Result<AudioFrameCaptureIter, Error> {
+        let audio_source = self.kinect.audio_source()?;
+        // Open the reader to active the source.
+        let reader = audio_source.open_reader()?;
+        // Ensure the audio source is active.
+        // If not, event subscription and frame acquisition might fail.
+        if !audio_source.get_is_active()? {
+            log::warn!("Audio source is not active, cannot subscribe to frame arrived event.");
+            return Err(Error::from_hresult(E_FAIL));
+        }
+
+        let waitable_handle = reader.subscribe_frame_arrived()?;
         Ok(AudioFrameCaptureIter {
-            reader: &self.reader,
+            reader,
             waitable_handle,
             timeout_ms: DEFAULT_FRAME_WAIT_TIMEOUT_MS,
         })
-    }
-
-    /// Gets the audio source for configuration purposes.
-    pub fn audio_source(&self) -> &AudioSource {
-        &self.audio_source
     }
 }
 
@@ -78,13 +68,13 @@ impl AudioFrameCapture {
 ///
 /// This iterator blocks until a new frame is available or an error occurs.
 /// It is created by calling the `iter` method on `AudioFrameCapture`.
-pub struct AudioFrameCaptureIter<'a> {
-    reader: &'a AudioBeamFrameReader,
+pub struct AudioFrameCaptureIter {
+    reader: AudioBeamFrameReader,
     waitable_handle: WAITABLE_HANDLE,
     timeout_ms: u32,
 }
 
-impl<'a> Drop for AudioFrameCaptureIter<'a> {
+impl Drop for AudioFrameCaptureIter {
     fn drop(&mut self) {
         // Best effort to unsubscribe from the frame arrived event.
         // Errors in `drop` are typically logged or ignored, as panicking in drop is problematic.
@@ -94,7 +84,7 @@ impl<'a> Drop for AudioFrameCaptureIter<'a> {
     }
 }
 
-impl<'a> Iterator for AudioFrameCaptureIter<'a> {
+impl Iterator for AudioFrameCaptureIter {
     type Item = Result<AudioFrameData, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {

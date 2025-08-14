@@ -1,5 +1,5 @@
 use kinect_v2_sys::{
-    DEFAULT_FRAME_WAIT_TIMEOUT_MS, WAITABLE_HANDLE,
+    ColorImageFormat, DEFAULT_FRAME_WAIT_TIMEOUT_MS, WAITABLE_HANDLE,
     bindings::FrameSourceTypes,
     kinect::{self, KinectSensor},
     multi_source_frame::{MultiSourceFrame, MultiSourceFrameReader},
@@ -15,8 +15,7 @@ use crate::{
 };
 
 pub struct MultiSourceCapture {
-    _kinect: KinectSensor,
-    reader: MultiSourceFrameReader,
+    kinect: KinectSensor,
 }
 
 impl MultiSourceCapture {
@@ -32,18 +31,7 @@ impl MultiSourceCapture {
         let kinect = kinect::get_default_kinect_sensor()?;
         kinect.open()?;
 
-        let enabled_frame_source_types = FrameSourceTypes::Color
-            | FrameSourceTypes::Depth
-            | FrameSourceTypes::Infrared
-            | FrameSourceTypes::BodyIndex
-            | FrameSourceTypes::Body;
-
-        let reader = kinect.open_multi_source_frame_reader(enabled_frame_source_types)?;
-
-        Ok(MultiSourceCapture {
-            _kinect: kinect,
-            reader,
-        })
+        Ok(MultiSourceCapture { kinect })
     }
 
     /// Returns an iterator over multi-source frames.
@@ -56,12 +44,20 @@ impl MultiSourceCapture {
     ///
     /// Returns an error if it fails to subscribe to the frame arrived event,
     /// which is necessary for the iterator to function.
-    pub fn iter<'a>(&'a self) -> Result<MultiSourceCaptureIter<'a>, Error> {
+    pub fn iter(&self) -> Result<MultiSourceCaptureIter, Error> {
+        let enabled_frame_source_types = FrameSourceTypes::Color
+            | FrameSourceTypes::Depth
+            | FrameSourceTypes::Infrared
+            | FrameSourceTypes::BodyIndex
+            | FrameSourceTypes::Body;
+        let reader = self
+            .kinect
+            .open_multi_source_frame_reader(enabled_frame_source_types)?;
+
         let mut waitable_handle = WAITABLE_HANDLE::default();
-        self.reader
-            .subscribe_multi_source_frame_arrived(&mut waitable_handle)?;
+        reader.subscribe_multi_source_frame_arrived(&mut waitable_handle)?;
         Ok(MultiSourceCaptureIter {
-            reader: &self.reader,
+            reader,
             waitable_handle,
             timeout_ms: DEFAULT_FRAME_WAIT_TIMEOUT_MS,
         })
@@ -72,13 +68,13 @@ impl MultiSourceCapture {
 ///
 /// This iterator blocks until a new frame is available or an error occurs.
 /// It is created by calling the `iter` method on `MultiSourceCapture`.
-pub struct MultiSourceCaptureIter<'a> {
-    reader: &'a MultiSourceFrameReader,
+pub struct MultiSourceCaptureIter {
+    reader: MultiSourceFrameReader,
     waitable_handle: WAITABLE_HANDLE,
     timeout_ms: u32,
 }
 
-impl<'a> Drop for MultiSourceCaptureIter<'a> {
+impl Drop for MultiSourceCaptureIter {
     fn drop(&mut self) {
         // Best effort to unsubscribe from the frame arrived event.
         // Errors in `drop` are typically logged or ignored, as panicking in drop is problematic.
@@ -91,7 +87,7 @@ impl<'a> Drop for MultiSourceCaptureIter<'a> {
     }
 }
 
-impl<'a> Iterator for MultiSourceCaptureIter<'a> {
+impl Iterator for MultiSourceCaptureIter {
     type Item = Result<MultiSourceFrameData, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -138,7 +134,7 @@ pub struct MultiSourceFrameData {
 impl MultiSourceFrameData {
     pub fn new(multi_source_frame: &MultiSourceFrame) -> Result<Self, Error> {
         // Try to get each frame type, but don't fail if one is not available
-        let color_frame = Self::get_color_frame_data(multi_source_frame);
+        let color_frame = Self::get_color_frame_data(multi_source_frame, None);
         let depth_frame = Self::get_depth_frame_data(multi_source_frame);
         let infrared_frame = Self::get_infrared_frame_data(multi_source_frame);
         let body_index_frame = Self::get_body_index_frame_data(multi_source_frame);
@@ -153,10 +149,13 @@ impl MultiSourceFrameData {
         })
     }
 
-    fn get_color_frame_data(multi_source_frame: &MultiSourceFrame) -> Option<ColorFrameData> {
+    fn get_color_frame_data(
+        multi_source_frame: &MultiSourceFrame,
+        format: Option<ColorImageFormat>,
+    ) -> Option<ColorFrameData> {
         let color_frame_reference = multi_source_frame.get_color_frame_reference().ok()?;
         let color_frame = color_frame_reference.acquire_frame().ok()?;
-        ColorFrameData::new(&color_frame).ok()
+        ColorFrameData::new(&color_frame, format).ok()
     }
 
     fn get_depth_frame_data(multi_source_frame: &MultiSourceFrame) -> Option<DepthFrameData> {

@@ -14,8 +14,7 @@ use windows::{Win32::Foundation::WAIT_EVENT, core::Error};
 /// This struct is responsible for initializing and holding the necessary Kinect
 /// resources to capture depth frames.
 pub struct DepthFrameCapture {
-    _kinect: KinectSensor,    // keep the kinect sensor instance alive.
-    reader: DepthFrameReader, // Used to read depth frames.
+    kinect: KinectSensor, // keep the kinect sensor instance alive.
 }
 
 impl DepthFrameCapture {
@@ -32,19 +31,7 @@ impl DepthFrameCapture {
         let kinect = kinect::get_default_kinect_sensor()?;
         kinect.open()?;
 
-        let source = kinect.depth_frame_source()?;
-        let reader = source.open_reader()?;
-
-        // Ensure the depth frame source is active.
-        // If not, event subscription and frame acquisition might fail.
-        if !source.get_is_active()? {
-            return Err(Error::from_hresult(E_FAIL));
-        }
-
-        Ok(DepthFrameCapture {
-            _kinect: kinect,
-            reader,
-        })
+        Ok(DepthFrameCapture { kinect })
     }
     /// Returns an iterator over depth frames.
     ///
@@ -56,10 +43,22 @@ impl DepthFrameCapture {
     ///
     /// Returns an error if it fails to subscribe to the frame arrived event,
     /// which is necessary for the iterator to function.
-    pub fn iter<'a>(&'a self) -> Result<DepthFrameCaptureIter<'a>, Error> {
-        let waitable_handle = self.reader.subscribe_frame_arrived()?;
+    pub fn iter(&self) -> Result<DepthFrameCaptureIter, Error> {
+        let source = self.kinect.depth_frame_source()?;
+        // Open the reader to activate the source.
+        let reader = source.open_reader()?;
+        // Ensure the depth frame source is active.
+        // If not, event subscription and frame acquisition might fail.
+        if !source.get_is_active()? {
+            log::warn!(
+                "Depth frame source is not active, cannot subscribe to frame arrived event."
+            );
+            return Err(Error::from_hresult(E_FAIL));
+        }
+
+        let waitable_handle = reader.subscribe_frame_arrived()?;
         Ok(DepthFrameCaptureIter {
-            reader: &self.reader,
+            reader,
             waitable_handle,
             timeout_ms: DEFAULT_FRAME_WAIT_TIMEOUT_MS,
         })
@@ -70,13 +69,13 @@ impl DepthFrameCapture {
 ///
 /// This iterator blocks until a new frame is available or an error occurs.
 /// It is created by calling the `iter` method on `DepthFrameCapture`.
-pub struct DepthFrameCaptureIter<'a> {
-    reader: &'a DepthFrameReader,
+pub struct DepthFrameCaptureIter {
+    reader: DepthFrameReader,
     waitable_handle: WAITABLE_HANDLE,
     timeout_ms: u32,
 }
 
-impl<'a> Drop for DepthFrameCaptureIter<'a> {
+impl Drop for DepthFrameCaptureIter {
     fn drop(&mut self) {
         // Best effort to unsubscribe from the frame arrived event.
         // Errors in `drop` are typically logged or ignored, as panicking in drop is problematic.
@@ -86,7 +85,7 @@ impl<'a> Drop for DepthFrameCaptureIter<'a> {
     }
 }
 
-impl<'a> Iterator for DepthFrameCaptureIter<'a> {
+impl Iterator for DepthFrameCaptureIter {
     type Item = Result<DepthFrameData, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {

@@ -14,8 +14,7 @@ use windows::{Win32::Foundation::WAIT_EVENT, core::Error};
 /// This struct is responsible for initializing and holding the necessary Kinect
 /// resources to capture body index frames.
 pub struct BodyIndexFrameCapture {
-    _kinect: KinectSensor,        // keep the kinect sensor instance alive.
-    reader: BodyIndexFrameReader, // Used to read body index frames.
+    kinect: KinectSensor, // keep the kinect sensor instance alive.
 }
 
 impl BodyIndexFrameCapture {
@@ -32,19 +31,7 @@ impl BodyIndexFrameCapture {
         let kinect = kinect::get_default_kinect_sensor()?;
         kinect.open()?;
 
-        let source = kinect.body_index_frame_source()?;
-        let reader = source.open_reader()?;
-
-        // Ensure the body index frame source is active.
-        // If not, event subscription and frame acquisition might fail.
-        if !source.get_is_active()? {
-            return Err(Error::from_hresult(E_FAIL));
-        }
-
-        Ok(BodyIndexFrameCapture {
-            _kinect: kinect,
-            reader,
-        })
+        Ok(BodyIndexFrameCapture { kinect })
     }
 
     /// Returns an iterator over body index frames.
@@ -57,11 +44,23 @@ impl BodyIndexFrameCapture {
     ///
     /// Returns an error if it fails to subscribe to the frame arrived event,
     /// which is necessary for the iterator to function.
-    pub fn iter<'a>(&'a self) -> Result<BodyIndexFrameCaptureIter<'a>, Error> {
+    pub fn iter(&self) -> Result<BodyIndexFrameCaptureIter, Error> {
+        let source = self.kinect.body_index_frame_source()?;
+        // Open the reader to activate the source.
+        let reader = source.open_reader()?;
+        // Ensure the body index frame source is active.
+        // If not, event subscription and frame acquisition might fail.
+        if !source.get_is_active()? {
+            log::warn!(
+                "Body index frame source is not active, cannot subscribe to frame arrived event."
+            );
+            return Err(Error::from_hresult(E_FAIL));
+        }
+
         let mut waitable_handle = WAITABLE_HANDLE::default();
-        self.reader.subscribe_frame_arrived(&mut waitable_handle)?;
+        reader.subscribe_frame_arrived(&mut waitable_handle)?;
         Ok(BodyIndexFrameCaptureIter {
-            reader: &self.reader,
+            reader,
             waitable_handle,
             timeout_ms: DEFAULT_FRAME_WAIT_TIMEOUT_MS,
         })
@@ -72,13 +71,13 @@ impl BodyIndexFrameCapture {
 ///
 /// This iterator blocks until a new frame is available or an error occurs.
 /// It is created by calling the `iter` method on `BodyIndexFrameCapture`.
-pub struct BodyIndexFrameCaptureIter<'a> {
-    reader: &'a BodyIndexFrameReader,
+pub struct BodyIndexFrameCaptureIter {
+    reader: BodyIndexFrameReader,
     waitable_handle: WAITABLE_HANDLE,
     timeout_ms: u32,
 }
 
-impl<'a> Drop for BodyIndexFrameCaptureIter<'a> {
+impl Drop for BodyIndexFrameCaptureIter {
     fn drop(&mut self) {
         // Best effort to unsubscribe from the frame arrived event.
         // Errors in `drop` are typically logged or ignored, as panicking in drop is problematic.
@@ -88,7 +87,7 @@ impl<'a> Drop for BodyIndexFrameCaptureIter<'a> {
     }
 }
 
-impl<'a> Iterator for BodyIndexFrameCaptureIter<'a> {
+impl Iterator for BodyIndexFrameCaptureIter {
     type Item = Result<BodyIndexFrameData, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {

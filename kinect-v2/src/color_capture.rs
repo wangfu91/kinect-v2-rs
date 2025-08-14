@@ -5,7 +5,7 @@ use kinect_v2_sys::{
     color::{ColorFrame, ColorFrameReader},
     kinect::{self, KinectSensor},
 };
-use windows::Win32::Foundation::{E_FAIL, WAIT_OBJECT_0, WAIT_TIMEOUT};
+use windows::Win32::Foundation::{E_FAIL, E_INVALIDARG, WAIT_OBJECT_0, WAIT_TIMEOUT};
 use windows::Win32::System::Threading::WaitForSingleObject;
 use windows::{Win32::Foundation::WAIT_EVENT, core::Error};
 
@@ -14,8 +14,8 @@ use windows::{Win32::Foundation::WAIT_EVENT, core::Error};
 /// This struct is responsible for initializing and holding the necessary Kinect
 /// resources to capture color frames.
 pub struct ColorFrameCapture {
-    _kinect: KinectSensor,    // keep the kinect sensor instance alive.
-    reader: ColorFrameReader, // Used to read color frames.
+    kinect: KinectSensor,             // keep the kinect sensor instance alive.
+    format: Option<ColorImageFormat>, // The desired color image format.
 }
 
 impl ColorFrameCapture {
@@ -32,19 +32,17 @@ impl ColorFrameCapture {
         let kinect = kinect::get_default_kinect_sensor()?;
         kinect.open()?;
 
-        let source = kinect.color_frame_source()?;
-        let reader = source.open_reader()?;
-
-        // Ensure the color frame source is active.
-        // If not, event subscription and frame acquisition might fail.
-        if !source.get_is_active()? {
-            return Err(Error::from_hresult(E_FAIL));
-        }
-
         Ok(ColorFrameCapture {
-            _kinect: kinect,
-            reader,
+            kinect,
+            format: None,
         })
+    }
+
+    /// Creates a new `ColorFrameCapture` instance with the specified color image format.
+    pub fn new_with_format(color_image_format: ColorImageFormat) -> Result<Self, Error> {
+        let mut capture = Self::new()?;
+        capture.format = Some(color_image_format);
+        Ok(capture)
     }
 
     /// Returns an iterator over color frames.
@@ -57,13 +55,26 @@ impl ColorFrameCapture {
     ///
     /// Returns an error if it fails to subscribe to the frame arrived event,
     /// which is necessary for the iterator to function.
-    pub fn iter<'a>(&'a self) -> Result<ColorFrameCaptureIter<'a>, Error> {
+    pub fn iter(&self) -> Result<ColorFrameCaptureIter, Error> {
+        let source = self.kinect.color_frame_source()?;
+        // Open the reader to active the source.
+        let reader = source.open_reader()?;
+        // Ensure the color frame source is active.
+        // If not, event subscription and frame acquisition might fail.
+        if !source.get_is_active()? {
+            log::warn!(
+                "Color frame source is not active, cannot subscribe to frame arrived event."
+            );
+            return Err(Error::from_hresult(E_FAIL));
+        }
         let mut waitable_handle = WAITABLE_HANDLE::default();
-        self.reader.subscribe_frame_arrived(&mut waitable_handle)?;
+
+        reader.subscribe_frame_arrived(&mut waitable_handle)?;
         Ok(ColorFrameCaptureIter {
-            reader: &self.reader,
+            reader,
             waitable_handle,
             timeout_ms: DEFAULT_FRAME_WAIT_TIMEOUT_MS,
+            format: self.format.clone(),
         })
     }
 }
@@ -72,13 +83,14 @@ impl ColorFrameCapture {
 ///
 /// This iterator blocks until a new frame is available or an error occurs.
 /// It is created by calling the `iter` method on `ColorFrameCapture`.
-pub struct ColorFrameCaptureIter<'a> {
-    reader: &'a ColorFrameReader,
+pub struct ColorFrameCaptureIter {
+    reader: ColorFrameReader,
     waitable_handle: WAITABLE_HANDLE,
     timeout_ms: u32,
+    format: Option<ColorImageFormat>,
 }
 
-impl<'a> Drop for ColorFrameCaptureIter<'a> {
+impl Drop for ColorFrameCaptureIter {
     fn drop(&mut self) {
         // Best effort to unsubscribe from the frame arrived event.
         // Errors in `drop` are typically logged or ignored, as panicking in drop is problematic.
@@ -88,7 +100,7 @@ impl<'a> Drop for ColorFrameCaptureIter<'a> {
     }
 }
 
-impl<'a> Iterator for ColorFrameCaptureIter<'a> {
+impl Iterator for ColorFrameCaptureIter {
     type Item = Result<ColorFrameData, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -105,7 +117,7 @@ impl<'a> Iterator for ColorFrameCaptureIter<'a> {
                         .get_frame_arrived_event_data(self.waitable_handle)?;
                     let frame_reference = event_args.get_frame_reference()?;
                     let color_frame = frame_reference.acquire_frame()?;
-                    ColorFrameData::new(&color_frame)
+                    ColorFrameData::new(&color_frame, self.format.clone())
                 })(); // Immediately invoke the closure
                 return Some(result);
             } else if wait_status == WAIT_TIMEOUT {
@@ -130,15 +142,51 @@ pub struct ColorFrameData {
     pub data: Arc<[u8]>, //Use Arc<[u8]> instead of Vec<u8> to avoid expensive cloning
 }
 
+fn get_bytes_per_pixel_for_format(format: ColorImageFormat) -> u32 {
+    match format {
+        ColorImageFormat::Rgba | ColorImageFormat::Bgra | ColorImageFormat::Bayer => 4,
+        ColorImageFormat::Yuy2 | ColorImageFormat::Yuv => 2,
+        ColorImageFormat::None => 0,
+    }
+}
+
 impl ColorFrameData {
-    pub fn new(color_frame: &ColorFrame) -> Result<Self, Error> {
+    pub fn new(
+        color_frame: &ColorFrame,
+        format_opt: Option<ColorImageFormat>,
+    ) -> Result<Self, Error> {
         let frame_description = color_frame.get_frame_description()?;
         let width = frame_description.get_width()? as u32;
         let height = frame_description.get_height()? as u32;
         let bytes_per_pixel = frame_description.get_bytes_per_pixel()?;
+        let buffer_size = width * height * bytes_per_pixel;
         let timestamp = color_frame.get_relative_time()? as u64;
         let image_format = color_frame.get_raw_color_image_format()?;
-        let buffer_size = width * height * bytes_per_pixel;
+        if let Some(desired_format) = format_opt {
+            if image_format != desired_format {
+                // If the image format does not match the required format, we need to convert it.
+                let desired_bpp = get_bytes_per_pixel_for_format(desired_format.clone());
+                if desired_bpp == 0 {
+                    return Err(Error::from_hresult(E_INVALIDARG));
+                }
+                let converted_buffer_size = width * height * desired_bpp;
+                let mut converted_data = vec![0u8; converted_buffer_size as usize];
+                color_frame.copy_converted_frame_data_to_array(
+                    &mut converted_data,
+                    desired_format.clone(),
+                )?;
+                return Ok(Self {
+                    width,
+                    height,
+                    fps: KINECT_DEFAULT_CAPTURE_FPS,
+                    bytes_per_pixel: desired_bpp,
+                    timestamp,
+                    image_format: desired_format,
+                    data: Arc::from(converted_data), // Convert Vec<u8> to Arc<[u8]>
+                });
+            }
+        }
+
         let mut data = Vec::with_capacity(buffer_size as usize);
         let raw_buffer = color_frame.access_raw_underlying_buffer()?;
         assert!(
