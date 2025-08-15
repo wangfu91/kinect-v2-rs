@@ -21,3 +21,10 @@ kinect-v2-sys = { path = "../kinect-v2-sys", version = "0.1.1" }
 [dev-dependencies]
 anyhow.workspace = true
 hound.workspace = true
+
+[package.metadata.docs.rs]
+targets = [
+    "x86_64-pc-windows-msvc",
+    "aarch64-pc-windows-msvc",
+    "i686-pc-windows-msvc",
+]

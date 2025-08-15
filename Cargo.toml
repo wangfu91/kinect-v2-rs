@@ -1,8 +1,6 @@
 [workspace]
 resolver = "3"
-members = [ "kinect-v2", 
-    "kinect-v2-sys"
-]
+members = ["kinect-v2", "kinect-v2-sys"]
 
 [workspace.package]
 edition = "2024"
@@ -23,10 +21,6 @@ windows = { version = "0.61.3", features = [
     "Win32_System_Com",
     "Win32_System_Com_Urlmon",
     "Win32_System_Threading",
-]}
+] }
 anyhow = "1.0"
 hound = "3.5"
-
-[workspace.metadata.docs.rs]
-targets = ["x86_64-pc-windows-msvc", "aarch64-pc-windows-msvc", "i686-pc-windows-msvc"]
-
