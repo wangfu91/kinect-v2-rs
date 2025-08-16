@@ -28,6 +28,49 @@ pub use kinect_v2_sys::bindings::PointerDeviceType;
 pub use kinect_v2_sys::bindings::TrackingConfidence;
 pub use kinect_v2_sys::bindings::TrackingState;
 
+use kinect_v2_sys::kinect::KinectSensor;
+use windows::core::Error;
+
+#[derive(Debug, Clone)]
+pub struct Kinect {
+    sensor: KinectSensor,
+    opened: bool,
+}
+
+impl Kinect {
+    /// Create and open the default Kinect sensor. Returns an error if no sensor is present or opening fails.
+    pub fn new() -> Result<Self, Error> {
+        let sensor = kinect_v2_sys::kinect::get_default_kinect_sensor()?;
+        // try to open immediately so new() returns a ready-to-use instance
+        sensor.open()?;
+        Ok(Kinect {
+            sensor,
+            opened: true,
+        })
+    }
+
+    /// Query sensor availability.
+    pub fn is_available(&self) -> Result<bool, Error> {
+        self.sensor.is_available()
+    }
+
+    /// Close the sensor explicitly. Returns any error encountered.
+    pub fn close(&mut self) -> Result<(), Error> {
+        if self.opened {
+            self.sensor.close()?;
+            self.opened = false;
+        }
+        Ok(())
+    }
+}
+
+impl Drop for Kinect {
+    fn drop(&mut self) {
+        // best-effort cleanup; ignore errors in Drop
+        let _ = self.sensor.close();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     // TODO: Add tests for the kinect-v2 module

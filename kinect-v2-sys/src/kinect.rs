@@ -51,6 +51,7 @@ impl Drop for IsAvailableChangedEventArgs {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct KinectSensor {
     ptr: *mut IKinectSensor,
 }
