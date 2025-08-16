@@ -66,6 +66,7 @@ impl Kinect {
 
 impl Drop for Kinect {
     fn drop(&mut self) {
+        log::trace!("Kinect sensor is being closed");
         // best-effort cleanup; ignore errors in Drop
         let _ = self.sensor.close();
     }
