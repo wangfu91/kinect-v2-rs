@@ -166,10 +166,10 @@ impl Drop for DepthFrameSource {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();
@@ -299,10 +299,10 @@ impl Drop for DepthFrameReader {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();
@@ -340,10 +340,10 @@ impl Drop for DepthFrameArrivedEventArgs {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();
@@ -396,10 +396,10 @@ impl Drop for DepthFrameReference {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();
@@ -533,10 +533,10 @@ impl Drop for DepthFrame {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();

@@ -115,10 +115,10 @@ impl Drop for LongExposureInfraredFrame {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();
@@ -259,10 +259,10 @@ impl Drop for LongExposureInfraredFrameSource {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();
@@ -408,10 +408,10 @@ impl Drop for LongExposureInfraredFrameReader {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();
@@ -466,10 +466,10 @@ impl Drop for LongExposureInfraredFrameReference {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();
@@ -509,10 +509,10 @@ impl Drop for LongExposureInfraredFrameArrivedEventArgs {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();

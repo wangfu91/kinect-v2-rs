@@ -277,10 +277,10 @@ impl Drop for Body {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();
@@ -361,10 +361,10 @@ impl Drop for BodyHandPair {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();
@@ -535,10 +535,10 @@ impl Drop for BodyFrameSource {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();
@@ -593,10 +593,10 @@ impl Drop for BodyFrameReference {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();
@@ -735,10 +735,10 @@ impl Drop for BodyFrameReader {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();
@@ -836,10 +836,10 @@ impl Drop for BodyFrame {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();
@@ -880,10 +880,10 @@ impl Drop for BodyFrameArrivedEventArgs {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref() {
-                    if let Some(release_fn) = vtbl.Release {
-                        release_fn(self.ptr);
-                    }
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
                 }
             }
             self.ptr = ptr::null_mut();

@@ -162,29 +162,27 @@ impl ColorFrameData {
         let buffer_size = width * height * bytes_per_pixel;
         let timestamp = color_frame.get_relative_time()? as u64;
         let image_format = color_frame.get_raw_color_image_format()?;
-        if let Some(desired_format) = format_opt {
-            if image_format != desired_format {
-                // If the image format does not match the required format, we need to convert it.
-                let desired_bpp = get_bytes_per_pixel_for_format(desired_format.clone());
-                if desired_bpp == 0 {
-                    return Err(Error::from_hresult(E_INVALIDARG));
-                }
-                let converted_buffer_size = width * height * desired_bpp;
-                let mut converted_data = vec![0u8; converted_buffer_size as usize];
-                color_frame.copy_converted_frame_data_to_array(
-                    &mut converted_data,
-                    desired_format.clone(),
-                )?;
-                return Ok(Self {
-                    width,
-                    height,
-                    fps: KINECT_DEFAULT_CAPTURE_FPS,
-                    bytes_per_pixel: desired_bpp,
-                    timestamp,
-                    image_format: desired_format,
-                    data: Arc::from(converted_data), // Convert Vec<u8> to Arc<[u8]>
-                });
+        if let Some(desired_format) = format_opt
+            && image_format != desired_format
+        {
+            // If the image format does not match the required format, we need to convert it.
+            let desired_bpp = get_bytes_per_pixel_for_format(desired_format.clone());
+            if desired_bpp == 0 {
+                return Err(Error::from_hresult(E_INVALIDARG));
             }
+            let converted_buffer_size = width * height * desired_bpp;
+            let mut converted_data = vec![0u8; converted_buffer_size as usize];
+            color_frame
+                .copy_converted_frame_data_to_array(&mut converted_data, desired_format.clone())?;
+            return Ok(Self {
+                width,
+                height,
+                fps: KINECT_DEFAULT_CAPTURE_FPS,
+                bytes_per_pixel: desired_bpp,
+                timestamp,
+                image_format: desired_format,
+                data: Arc::from(converted_data), // Convert Vec<u8> to Arc<[u8]>
+            });
         }
 
         let mut data = Vec::with_capacity(buffer_size as usize);
