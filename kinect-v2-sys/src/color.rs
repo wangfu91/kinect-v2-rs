@@ -192,14 +192,11 @@ impl Drop for ColorFrame {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                let vtbl = (*self.ptr)
-                    .lpVtbl
-                    .as_ref()
-                    .expect("VTable pointer is null in Drop");
-                let release_fn = vtbl
-                    .Release
-                    .expect("Release function pointer is null in Drop");
-                release_fn(self.ptr);
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
+                }
             }
             self.ptr = ptr::null_mut();
         }
@@ -240,14 +237,11 @@ impl Drop for ColorFrameArrivedEventArgs {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                let vtbl = (*self.ptr)
-                    .lpVtbl
-                    .as_ref()
-                    .expect("VTable pointer is null in Drop");
-                let release_fn = vtbl
-                    .Release
-                    .expect("Release function pointer is null in Drop");
-                release_fn(self.ptr);
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
+                }
             }
             self.ptr = ptr::null_mut();
         }
@@ -300,14 +294,11 @@ impl Drop for ColorFrameReference {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                let vtbl = (*self.ptr)
-                    .lpVtbl
-                    .as_ref()
-                    .expect("VTable pointer is null in Drop");
-                let release_fn = vtbl
-                    .Release
-                    .expect("Release function pointer is null in Drop");
-                release_fn(self.ptr);
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
+                }
             }
             self.ptr = ptr::null_mut();
         }
@@ -389,14 +380,11 @@ impl Drop for ColorCameraSettings {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                let vtbl = (*self.ptr)
-                    .lpVtbl
-                    .as_ref()
-                    .expect("VTable pointer is null in Drop");
-                let release_fn = vtbl
-                    .Release
-                    .expect("Release function pointer is null in Drop");
-                release_fn(self.ptr);
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
+                }
             }
             self.ptr = ptr::null_mut();
         }
@@ -526,14 +514,11 @@ impl Drop for ColorFrameReader {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
             unsafe {
-                let vtbl = (*self.ptr)
-                    .lpVtbl
-                    .as_ref()
-                    .expect("VTable pointer is null in Drop");
-                let release_fn = vtbl
-                    .Release
-                    .expect("Release function pointer is null in Drop");
-                release_fn(self.ptr);
+                if let Some(vtbl) = (*self.ptr).lpVtbl.as_ref()
+                    && let Some(release_fn) = vtbl.Release
+                {
+                    release_fn(self.ptr);
+                }
             }
             self.ptr = ptr::null_mut();
         }
